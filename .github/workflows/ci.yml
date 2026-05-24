@@ -54,7 +54,11 @@ jobs:
           cache: true
       - uses: golangci/golangci-lint-action@v6
         with:
-          version: latest
+          # Our .golangci.yml uses the v2 config schema (migrated
+          # 2026-05-24). v1.x ships in the older runner image and rejects
+          # the schema with "additional properties 'version', 'formatters'
+          # not allowed" — pin a v2 release explicitly.
+          version: v2.1.6
           args: --timeout=5m
 
   build:

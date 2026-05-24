@@ -257,13 +257,15 @@ func TestCargoCacheResolverHandlesEmptyInputs(t *testing.T) {
 }
 
 func TestDefaultCargoSrcRootHonoursCARGOHOME(t *testing.T) {
-	t.Setenv("CARGO_HOME", "/custom/cargo")
-	require.Equal(t, "/custom/cargo/registry/src", defaultCargoSrcRoot())
+	t.Setenv("CARGO_HOME", filepath.Join(string(filepath.Separator), "custom", "cargo"))
+	want := filepath.Join(string(filepath.Separator), "custom", "cargo", "registry", "src")
+	require.Equal(t, want, defaultCargoSrcRoot())
 }
 
 func TestDefaultCargoSrcRootFallsBackToHome(t *testing.T) {
 	t.Setenv("CARGO_HOME", "")
 	root := defaultCargoSrcRoot()
 	require.NotEmpty(t, root)
-	require.Contains(t, root, "registry/src")
+	// Use OS-native path separator so the assertion matches on Windows too.
+	require.Contains(t, root, filepath.Join("registry", "src"))
 }

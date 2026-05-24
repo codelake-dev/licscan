@@ -239,6 +239,7 @@ func TestDefaultModCacheRootHonoursGOMODCACHE(t *testing.T) {
 
 func TestDefaultModCacheRootFallsBackToGOPATH(t *testing.T) {
 	t.Setenv("GOMODCACHE", "")
-	t.Setenv("GOPATH", "/my/gopath")
-	require.Equal(t, "/my/gopath/pkg/mod", defaultModCacheRoot())
+	gopath := filepath.Join(string(filepath.Separator), "my", "gopath")
+	t.Setenv("GOPATH", gopath)
+	require.Equal(t, filepath.Join(gopath, "pkg", "mod"), defaultModCacheRoot())
 }
