@@ -180,12 +180,56 @@ func TestScanErrorsOnMalformedPolicy(t *testing.T) {
 	require.Contains(t, err.Error(), "policy")
 }
 
-func TestScanCRAFlagEmitsNote(t *testing.T) {
+func TestScanCRAFlagWritesEvidencePair(t *testing.T) {
 	dir := writeProject(t)
-	_, stderr, err := runCmd(t, "scan", dir, "--cra")
+	outDir := filepath.Join(dir, "cra-out")
+	_, stderr, err := runCmd(t, "scan", dir, "--cra", "--output", outDir)
 	require.NoError(t, err)
-	require.Contains(t, stderr.String(), "CRA",
-		"--cra must surface a note about future SBOM emission")
+
+	jsonPath := filepath.Join(outDir, "cra-sbom.cdx.json")
+	pdfPath := filepath.Join(outDir, "cra-evidence.pdf")
+	require.FileExists(t, jsonPath, "CRA JSON SBOM must be written")
+	require.FileExists(t, pdfPath, "CRA PDF evidence must be written")
+
+	pdfBytes, err := os.ReadFile(pdfPath)
+	require.NoError(t, err)
+	require.True(t, len(pdfBytes) >= 4 && string(pdfBytes[:4]) == "%PDF",
+		"PDF must start with %%PDF magic header")
+
+	// Manufacturer block was not set in writeProject's go.mod-only fixture,
+	// so the warning note must surface on stderr.
+	require.Contains(t, stderr.String(), "manufacturer",
+		"--cra without manufacturer must emit a stderr warning")
+}
+
+func TestScanCRAFlagHonorsManufacturerInLicscanYml(t *testing.T) {
+	dir := writeProject(t)
+	require.NoError(t, os.WriteFile(
+		filepath.Join(dir, ".licscan.yml"),
+		[]byte(`
+manufacturer:
+  name: Acme GmbH
+  email: security@acme.example
+  url: https://acme.example
+  country: DE
+product:
+  name: my-app
+  version: 1.2.3
+`),
+		0o644))
+	outDir := filepath.Join(dir, "cra-out")
+
+	_, stderr, err := runCmd(t, "scan", dir, "--cra", "--output", outDir)
+	require.NoError(t, err)
+	require.NotContains(t, stderr.String(), "manufacturer",
+		"populated manufacturer block must NOT trigger the missing-manufacturer warning")
+
+	jsonBytes, err := os.ReadFile(filepath.Join(outDir, "cra-sbom.cdx.json"))
+	require.NoError(t, err)
+	require.Contains(t, string(jsonBytes), "Acme GmbH",
+		"manufacturer name must appear in the CRA JSON SBOM")
+	require.Contains(t, string(jsonBytes), "my-app",
+		"product name must appear in the CRA JSON SBOM")
 }
 
 // ── help text completeness ─────────────────────────────────────

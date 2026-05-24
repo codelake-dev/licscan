@@ -224,13 +224,50 @@ Both formats include canonical PURLs (`pkg:golang/...`, `pkg:npm/...`, etc.) and
 
 ## EU CRA Compliance Mode
 
-The EU Cyber Resilience Act (CRA) requires manufacturers of "products with digital elements" to maintain a machine-readable SBOM that includes specific metadata fields. `--cra` emits both a CycloneDX SBOM and a regulator-ready PDF in one pass:
+The EU Cyber Resilience Act (Regulation (EU) 2024/2847) requires manufacturers of "products with digital elements" to maintain a machine-readable SBOM with specific metadata (Article 13, Annex I §1(2)(s)). `--cra` emits both a CycloneDX 1.5 JSON SBOM **and** a regulator-ready PDF in one pass:
 
 ```bash
-licscan scan . --cra --output ./cra-evidence/
+licscan scan . --cra
+# → ./licscan-cra-evidence/cra-sbom.cdx.json
+# → ./licscan-cra-evidence/cra-evidence.pdf
 ```
 
-This is not legal advice — work with your DPO / compliance team to confirm scope. `licscan` *supports* CRA evidence collection; it does not *certify* you as CRA-compliant.
+Custom output directory:
+
+```bash
+licscan scan . --cra --output ./compliance/
+```
+
+### Manufacturer metadata
+
+Set the required CRA Article 13(2) producer identity in `.licscan.yml`:
+
+```yaml
+manufacturer:
+  name: Acme GmbH
+  email: security@acme.example
+  url: https://acme.example
+  country: DE
+
+product:
+  name: my-app
+  version: 1.2.3
+  category: important
+  support_lifecycle_end: "2031-05-24"
+```
+
+Without a manufacturer block, the evidence is still generated, but the PDF cover carries a warning that submission to a regulator requires the four required fields.
+
+### What gets generated
+
+**`cra-sbom.cdx.json`** — CycloneDX 1.5 SBOM (machine-readable) with CRA-specific extensions: `metadata.manufacturer`, `metadata.supplier` (licscan itself), `metadata.lifecycles.phase=operations`, and `metadata.properties[]` carrying the regulation, article, annex, manufacturer country, product category, and support-lifecycle-end as `eu-cra:*` namespaced properties.
+
+**`cra-evidence.pdf`** — regulator-friendly summary (human-readable):
+- Cover page with manufacturer + product + scan metadata + about-this-document statement
+- License risk summary table (counts per risk level, colour-coded)
+- Full dependency inventory sorted by descending risk
+
+> **Not legal advice.** This document *supports* CRA evidence collection — it does not *constitute* a declaration of conformity. The manufacturer remains responsible for verifying the inventory is complete and that listed components have been subjected to the vulnerability-handling processes required by the Regulation. Work with your legal / compliance team to confirm scope before submission.
 
 ---
 

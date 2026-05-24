@@ -44,9 +44,11 @@ const PolicyFile = ".licscan.yml"
 
 // Policy is the in-memory representation of .licscan.yml.
 type Policy struct {
-	Deny            []string    `yaml:"deny"`
-	Warn            []string    `yaml:"warn"`
-	AllowExceptions []Exception `yaml:"allow_exceptions"`
+	Deny            []string     `yaml:"deny"`
+	Warn            []string     `yaml:"warn"`
+	AllowExceptions []Exception  `yaml:"allow_exceptions"`
+	Manufacturer    Manufacturer `yaml:"manufacturer"`
+	Product         Product      `yaml:"product"`
 
 	// loadedFromDefault tracks whether this Policy came from the on-disk
 	// .licscan.yml (false) or the in-memory Default() (true). Exposed via
@@ -58,6 +60,39 @@ type Policy struct {
 type Exception struct {
 	Package string `yaml:"package"`
 	Reason  string `yaml:"reason"`
+}
+
+// Manufacturer identifies the producer of the scanned software for EU CRA
+// Article 13 evidence. All fields are optional; the CRA exporter degrades
+// gracefully (NOASSERTION) for missing values, but a complete block is
+// required for regulator submission.
+type Manufacturer struct {
+	Name    string `yaml:"name"`
+	Email   string `yaml:"email"`
+	URL     string `yaml:"url"`
+	Country string `yaml:"country"`
+}
+
+// IsZero reports whether the manufacturer block was left empty in
+// .licscan.yml — useful for surfacing a warning when --cra is requested
+// without a populated manufacturer.
+func (m Manufacturer) IsZero() bool {
+	return m.Name == "" && m.Email == "" && m.URL == "" && m.Country == ""
+}
+
+// Product identifies the scanned software itself for EU CRA evidence.
+// Name typically matches the project / git-repo name; Version may be
+// the git tag at scan time. Optional but recommended.
+type Product struct {
+	Name                string `yaml:"name"`
+	Version             string `yaml:"version"`
+	Category            string `yaml:"category"`              // CRA risk category if known
+	SupportLifecycleEnd string `yaml:"support_lifecycle_end"` // YYYY-MM-DD, default = 5y from release per CRA Art. 13(8)
+}
+
+// IsZero reports whether the product block was left empty.
+func (p Product) IsZero() bool {
+	return p.Name == "" && p.Version == "" && p.Category == "" && p.SupportLifecycleEnd == ""
 }
 
 // Default returns the built-in policy applied when .licscan.yml is absent.

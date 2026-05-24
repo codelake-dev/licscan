@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Phase 8 (EU CRA Compliance Mode)
+
+The headline differentiator. No existing OSS license scanner emits EU CRA Article 13 evidence out-of-the-box — licensee, fossa, TLDR Legal all stop at license inventory.
+
+- **`--cra` flag** writes a pair of regulator-ready artefacts into `--output` (default `./licscan-cra-evidence/`):
+  - `cra-sbom.cdx.json` — CycloneDX 1.5 SBOM with CRA-specific extensions: `metadata.manufacturer` (name/email/url/country), `metadata.supplier` (always licscan), `metadata.lifecycles.phase=operations`, `metadata.properties[]` with `eu-cra:article=13`, `eu-cra:regulation=Regulation (EU) 2024/2847`, `eu-cra:annex=I §1(2)(s)`, plus manufacturer-country / product-category / support-lifecycle-end when set.
+  - `cra-evidence.pdf` — native Go PDF (no headless-browser dependency) with cover page (manufacturer + product + scan metadata), summary table (count per risk level, colour-coded), and full dependency inventory (sorted by descending risk, monospace table).
+- **`.licscan.yml` extended** with two optional blocks:
+  - `manufacturer:` — name, email, url, country (CRA Art. 13(2) producer identity)
+  - `product:` — name, version, category, support_lifecycle_end (CRA Art. 13(8))
+- **Stderr warning** when `--cra` is invoked without a populated manufacturer block — evidence still generated but with a "regulator submission requires manufacturer" caveat printed inline on the PDF cover page.
+- New dependency: `github.com/go-pdf/fpdf` v0.9.0 (MIT) — pure-Go PDF generation, no CGO, no chromium subprocess.
+
+Verified: dogfood scan of licscan itself with full manifest generates `cra-sbom.cdx.json` (5.2 KB) + `cra-evidence.pdf` (5.2 KB, 3 pages) under 100 ms.
+
+This document supports but does not itself constitute a declaration of conformity — that remains the manufacturer's responsibility.
+
 ### Added — Phase 7 (policy engine)
 
 - **`.licscan.yml` policy file** with three sections: `deny`, `warn`, `allow_exceptions`.

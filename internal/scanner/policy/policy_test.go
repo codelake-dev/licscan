@@ -88,6 +88,52 @@ func TestLoadAcceptsEmptyFile(t *testing.T) {
 	require.Empty(t, p.Warn)
 }
 
+// ── Manufacturer + Product blocks (EU CRA evidence) ─────────────
+
+func TestLoadParsesManufacturerBlock(t *testing.T) {
+	dir := writePolicy(t, `
+manufacturer:
+  name: Acme GmbH
+  email: security@acme.example
+  url: https://acme.example
+  country: DE
+`)
+	p, err := Load(dir)
+	require.NoError(t, err)
+	require.Equal(t, "Acme GmbH", p.Manufacturer.Name)
+	require.Equal(t, "security@acme.example", p.Manufacturer.Email)
+	require.Equal(t, "https://acme.example", p.Manufacturer.URL)
+	require.Equal(t, "DE", p.Manufacturer.Country)
+	require.False(t, p.Manufacturer.IsZero())
+}
+
+func TestLoadParsesProductBlock(t *testing.T) {
+	dir := writePolicy(t, `
+product:
+  name: my-app
+  version: 1.2.3
+  category: important
+  support_lifecycle_end: "2031-05-24"
+`)
+	p, err := Load(dir)
+	require.NoError(t, err)
+	require.Equal(t, "my-app", p.Product.Name)
+	require.Equal(t, "1.2.3", p.Product.Version)
+	require.Equal(t, "important", p.Product.Category)
+	require.Equal(t, "2031-05-24", p.Product.SupportLifecycleEnd)
+	require.False(t, p.Product.IsZero())
+}
+
+func TestManufacturerIsZeroOnUnsetBlock(t *testing.T) {
+	p := Default()
+	require.True(t, p.Manufacturer.IsZero(), "default policy has no manufacturer set")
+}
+
+func TestProductIsZeroOnUnsetBlock(t *testing.T) {
+	p := Default()
+	require.True(t, p.Product.IsZero(), "default policy has no product set")
+}
+
 // ── Apply (per-dep classification) ──────────────────────────────
 
 func resultWithDeps(deps ...scanner.Dependency) *scanner.Result {

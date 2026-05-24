@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -21,6 +22,7 @@ type scanOptions struct {
 	format string
 	ci     bool
 	cra    bool
+	output string
 }
 
 func newScanCommand() *cobra.Command {
@@ -55,7 +57,9 @@ Output formats:
 	cmd.Flags().BoolVar(&opts.ci, "ci",
 		false, "CI mode — exit 1 on policy violation")
 	cmd.Flags().BoolVar(&opts.cra,
-		"cra", false, "emit EU CRA-compliant SBOM (PDF + JSON)")
+		"cra", false, "emit EU CRA-compliant SBOM (PDF + JSON) into --output")
+	cmd.Flags().StringVar(&opts.output, "output",
+		"./licscan-cra-evidence", "output directory for --cra artefacts")
 
 	return cmd
 }
@@ -106,10 +110,61 @@ func runScan(cmd *cobra.Command, path string, opts *scanOptions) error {
 	}
 
 	if opts.cra {
-		_, _ = fmt.Fprintln(cmd.ErrOrStderr(),
-			"note: EU CRA-compliant SBOM emission lands once the dedicated exporter ships in the next sprint")
+		if err := emitCRAEvidence(cmd, result, pol, opts.output); err != nil {
+			return fmt.Errorf("cra: %w", err)
+		}
 	}
 
+	return nil
+}
+
+// emitCRAEvidence writes the EU CRA Article 13 evidence pair
+// (CycloneDX JSON + PDF) into the requested output directory and
+// emits a stderr summary so the user knows where to find them.
+func emitCRAEvidence(cmd *cobra.Command, result *scanner.Result, pol *policy.Policy, outputDir string) error {
+	if err := os.MkdirAll(outputDir, 0o755); err != nil {
+		return fmt.Errorf("create output dir %q: %w", outputDir, err)
+	}
+
+	manifest := format.CRAManifest{
+		Manufacturer: pol.Manufacturer,
+		Product:      pol.Product,
+	}
+
+	if manifest.Manufacturer.IsZero() {
+		_, _ = fmt.Fprintln(cmd.ErrOrStderr(),
+			"warning: --cra invoked without a manufacturer block in .licscan.yml — "+
+				"the evidence is generated but regulator submission requires manufacturer Name/Email/URL/Country (CRA Art. 13(2)).")
+	}
+
+	jsonPath := filepath.Join(outputDir, "cra-sbom.cdx.json")
+	jsonFile, err := os.Create(jsonPath)
+	if err != nil {
+		return fmt.Errorf("create %s: %w", jsonPath, err)
+	}
+	if err := format.CRAJSON(jsonFile, result, manifest); err != nil {
+		_ = jsonFile.Close()
+		return fmt.Errorf("write %s: %w", jsonPath, err)
+	}
+	if err := jsonFile.Close(); err != nil {
+		return fmt.Errorf("close %s: %w", jsonPath, err)
+	}
+
+	pdfPath := filepath.Join(outputDir, "cra-evidence.pdf")
+	pdfFile, err := os.Create(pdfPath)
+	if err != nil {
+		return fmt.Errorf("create %s: %w", pdfPath, err)
+	}
+	if err := format.CRAPDF(pdfFile, result, manifest); err != nil {
+		_ = pdfFile.Close()
+		return fmt.Errorf("write %s: %w", pdfPath, err)
+	}
+	if err := pdfFile.Close(); err != nil {
+		return fmt.Errorf("close %s: %w", pdfPath, err)
+	}
+
+	_, _ = fmt.Fprintf(cmd.ErrOrStderr(),
+		"\nEU CRA evidence written:\n  %s\n  %s\n", jsonPath, pdfPath)
 	return nil
 }
 
