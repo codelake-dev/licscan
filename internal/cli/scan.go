@@ -63,6 +63,7 @@ Output formats:
 // Each new package-manager detector gets added here.
 var defaultDetectors = []scanner.Detector{
 	&detectors.GoMod{},
+	&detectors.Npm{},
 }
 
 func runScan(cmd *cobra.Command, path string, opts *scanOptions) error {

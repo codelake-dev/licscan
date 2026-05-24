@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Phase 3 (npm detector)
+
+- **npm detector**: parses `package.json` (direct deps across `dependencies`, `devDependencies`, `peerDependencies`, `optionalDependencies`) and `package-lock.json`. Handles all three lockfile generations: v1 (nested tree), v2 (compat + flat), v3 (flat only).
+- **License-field extractor**: handles all four shapes used in the wild — string SPDX, `{type: "..."}`  object (legacy), `[{type: "..."}]` array (legacy), and SPDX expressions like `(MIT OR Apache-2.0)`.
+- **`SEE LICENSE IN ...` indirection**: detected and forwarded to the LICENSE-file scanner fallback instead of being mis-classified as Unknown.
+- **NodeModulesResolver**: inspects `node_modules/<pkg>/package.json` first, falls back to `LICENSE` / `LICENCE` / `COPYING` file text identification.
+- **Scoped package handling**: `@babel/core`, `@img/sharp-libvips-*` etc. parse correctly.
+- **Risk-map extension**: BlueOak-1.0.0, Artistic-2.0, UPL-1.0, OFL-1.1 added as Permissive.
+
+Verified end-to-end against a 337-dependency Astro project — every license classified, 0 Unknowns.
+
 ### Added — Phase 2 (go.mod detector)
 
 - **Scanner engine**: `internal/scanner` with pluggable `Detector` interface and orchestrator.

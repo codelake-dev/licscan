@@ -24,6 +24,10 @@ var riskMap = map[string]RiskLevel{
 	"x11":             RiskPermissive,
 	"python-2.0":      RiskPermissive,
 	"postgresql":      RiskPermissive,
+	"blueoak-1.0.0":   RiskPermissive,
+	"artistic-2.0":    RiskPermissive,
+	"upl-1.0":         RiskPermissive,
+	"ofl-1.1":         RiskPermissive, // SIL Open Font License — common in font packages
 
 	// Weak copyleft — file-level / library-boundary copyleft.
 	"lgpl-2.1":            RiskWeakCopyleft,
