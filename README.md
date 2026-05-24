@@ -52,17 +52,20 @@ It is built for engineering teams who want license compliance to be a determinis
 
 ## Installation
 
+### One-liner (macOS / Linux)
+
+```bash
+curl -fsSL https://install.licscan.dev/install.sh | sh
+```
+
+Installs the latest stable release into `/usr/local/bin/licscan`. Override with:
+- `LICSCAN_VERSION=v0.9.0` — pin a specific version
+- `LICSCAN_INSTALL_DIR=$HOME/.local/bin` — install elsewhere (no sudo)
+
 ### Homebrew (macOS, Linux)
 
 ```bash
 brew install codelake-dev/tap/licscan
-```
-
-### Scoop (Windows)
-
-```powershell
-scoop bucket add codelake-dev https://github.com/codelake-dev/scoop-bucket
-scoop install licscan
 ```
 
 ### Go install
@@ -76,10 +79,16 @@ go install github.com/codelake-dev/licscan/cmd/licscan@latest
 Pre-built binaries for Linux, macOS and Windows (amd64 + arm64) are attached to each [GitHub Release](https://github.com/codelake-dev/licscan/releases).
 
 ```bash
-# Linux / macOS
-curl -L https://github.com/codelake-dev/licscan/releases/latest/download/licscan_$(uname -s)_$(uname -m).tar.gz | tar xz
-sudo mv licscan /usr/local/bin/
+# macOS (Apple Silicon)
+curl -L -o licscan https://github.com/codelake-dev/licscan/releases/latest/download/licscan-darwin-arm64
+chmod +x licscan && sudo mv licscan /usr/local/bin/
+
+# Linux (x86_64)
+curl -L -o licscan https://github.com/codelake-dev/licscan/releases/latest/download/licscan-linux-amd64
+chmod +x licscan && sudo mv licscan /usr/local/bin/
 ```
+
+Windows users: download `licscan-windows-amd64.exe` from the release page and add it to your PATH.
 
 ---
 

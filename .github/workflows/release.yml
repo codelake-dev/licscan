@@ -3,31 +3,307 @@ name: Release
 on:
   push:
     tags:
-      - "v*"
+      - 'v*'
 
 permissions:
   contents: write
-  packages: write
 
 jobs:
-  goreleaser:
+  build:
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            suffix: linux-amd64
+          - goos: linux
+            goarch: arm64
+            suffix: linux-arm64
+          - goos: darwin
+            goarch: amd64
+            suffix: darwin-amd64
+          - goos: darwin
+            goarch: arm64
+            suffix: darwin-arm64
+          - goos: windows
+            goarch: amd64
+            suffix: windows-amd64
+            ext: .exe
+
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.23"
-          cache: true
+          go-version-file: go.mod
+
       - name: Run tests
-        run: go test ./... -race
-      - uses: goreleaser/goreleaser-action@v6
-        with:
-          distribution: goreleaser
-          version: latest
-          args: release --clean
+        run: go test ./... -count=1
+
+      - name: Build binary
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Optional: HOMEBREW_TAP_TOKEN for pushing to homebrew-tap
-          # HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          COMMIT="$(git rev-parse --short HEAD)"
+          BUILD_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          PKG="github.com/codelake-dev/licscan/internal/version"
+          go build -trimpath \
+            -ldflags "-s -w \
+              -X ${PKG}.Version=${VERSION} \
+              -X ${PKG}.Commit=${COMMIT} \
+              -X ${PKG}.BuildDate=${BUILD_DATE}" \
+            -o "licscan-${{ matrix.suffix }}${{ matrix.ext }}" ./cmd/licscan
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: licscan-${{ matrix.suffix }}
+          path: licscan-${{ matrix.suffix }}${{ matrix.ext }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Generate checksums
+        working-directory: artifacts
+        run: sha256sum licscan-* > checksums.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            artifacts/licscan-*
+            artifacts/checksums.txt
+          body: |
+            ## LicScan ${{ github.ref_name }}
+
+            Open-source license & compliance scanner for modern codebases.
+
+            ### Installation
+
+            **One-liner (macOS / Linux):**
+            ```bash
+            curl -fsSL https://install.licscan.dev/install.sh | sh
+            ```
+
+            **Homebrew:**
+            ```bash
+            brew install codelake-dev/tap/licscan
+            ```
+
+            **macOS (Apple Silicon):**
+            ```bash
+            curl -L -o licscan https://github.com/codelake-dev/licscan/releases/download/${{ github.ref_name }}/licscan-darwin-arm64
+            chmod +x licscan
+            sudo mv licscan /usr/local/bin/
+            ```
+
+            **macOS (Intel):**
+            ```bash
+            curl -L -o licscan https://github.com/codelake-dev/licscan/releases/download/${{ github.ref_name }}/licscan-darwin-amd64
+            chmod +x licscan
+            sudo mv licscan /usr/local/bin/
+            ```
+
+            **Linux (x86_64):**
+            ```bash
+            curl -L -o licscan https://github.com/codelake-dev/licscan/releases/download/${{ github.ref_name }}/licscan-linux-amd64
+            chmod +x licscan
+            sudo mv licscan /usr/local/bin/
+            ```
+
+            **Windows:**
+            Download `licscan-windows-amd64.exe` and add it to your PATH.
+
+            ---
+            https://github.com/codelake-dev/licscan
+
+  upload-r2:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Generate checksums
+        working-directory: artifacts
+        run: sha256sum licscan-* > checksums.txt
+
+      - name: Generate version.json
+        run: |
+          PUBLIC="${{ secrets.R2_PUBLIC_URL }}"
+          PUBLIC="${PUBLIC%/}"
+          VERSION="${{ github.ref_name }}"
+          cat > artifacts/version.json <<EOF
+          {
+            "name": "licscan",
+            "version": "${VERSION}",
+            "released_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "repo": "https://github.com/codelake-dev/licscan",
+            "install": "curl -fsSL ${PUBLIC}/licscan/install.sh | sh",
+            "platforms": {
+              "linux/amd64":   "${PUBLIC}/licscan/${VERSION}/licscan-linux-amd64",
+              "linux/arm64":   "${PUBLIC}/licscan/${VERSION}/licscan-linux-arm64",
+              "darwin/amd64":  "${PUBLIC}/licscan/${VERSION}/licscan-darwin-amd64",
+              "darwin/arm64":  "${PUBLIC}/licscan/${VERSION}/licscan-darwin-arm64",
+              "windows/amd64": "${PUBLIC}/licscan/${VERSION}/licscan-windows-amd64.exe"
+            },
+            "checksums": "${PUBLIC}/licscan/${VERSION}/checksums.txt",
+            "latest": {
+              "linux/amd64":   "${PUBLIC}/licscan/latest/licscan-linux-amd64",
+              "linux/arm64":   "${PUBLIC}/licscan/latest/licscan-linux-arm64",
+              "darwin/amd64":  "${PUBLIC}/licscan/latest/licscan-darwin-amd64",
+              "darwin/arm64":  "${PUBLIC}/licscan/latest/licscan-darwin-arm64",
+              "windows/amd64": "${PUBLIC}/licscan/latest/licscan-windows-amd64.exe",
+              "checksums":     "${PUBLIC}/licscan/latest/checksums.txt"
+            }
+          }
+          EOF
+
+      - name: Inject R2_PUBLIC_URL into install.sh
+        # install.sh ships with a sensible default (install.licscan.dev) for
+        # local testing; rewrite to the deployed CDN URL before upload so
+        # the script downloaded from R2 always hits R2.
+        run: |
+          PUBLIC="${{ secrets.R2_PUBLIC_URL }}"
+          PUBLIC="${PUBLIC%/}"
+          sed -i "s|https://install.licscan.dev|${PUBLIC}|g" install.sh
+
+      - name: Upload to R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ENDPOINT: https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          VERSION="${{ github.ref_name }}"
+
+          # Upload versioned binaries + checksums
+          aws s3 cp artifacts/ "s3://${R2_BUCKET}/licscan/${VERSION}/" \
+            --recursive --endpoint-url "${R2_ENDPOINT}"
+
+          # Upload as latest (overwrites the previous release)
+          aws s3 cp artifacts/ "s3://${R2_BUCKET}/licscan/latest/" \
+            --recursive --endpoint-url "${R2_ENDPOINT}"
+
+          # Upload version.json to licscan root
+          aws s3 cp artifacts/version.json "s3://${R2_BUCKET}/licscan/version.json" \
+            --endpoint-url "${R2_ENDPOINT}" \
+            --content-type application/json \
+            --cache-control "public, max-age=60"
+
+          # Upload install.sh to licscan root
+          aws s3 cp install.sh "s3://${R2_BUCKET}/licscan/install.sh" \
+            --endpoint-url "${R2_ENDPOINT}" \
+            --content-type "text/x-shellscript" \
+            --cache-control "public, max-age=60"
+
+  update-homebrew:
+    needs: release
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Compute SHA256 sums
+        id: sha
+        working-directory: artifacts
+        run: |
+          echo "darwin_arm64=$(sha256sum licscan-darwin-arm64 | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "darwin_amd64=$(sha256sum licscan-darwin-amd64 | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "linux_arm64=$(sha256sum licscan-linux-arm64 | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "linux_amd64=$(sha256sum licscan-linux-amd64 | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout homebrew-tap
+        uses: actions/checkout@v4
+        with:
+          repository: codelake-dev/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: tap
+
+      - name: Update formula
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          VER="${VERSION#v}"
+          mkdir -p tap/Formula
+          cat > tap/Formula/licscan.rb <<RUBY
+          class Licscan < Formula
+            desc "Open-source license & compliance scanner for modern codebases"
+            homepage "https://github.com/codelake-dev/licscan"
+            license "Apache-2.0"
+            version "${VER}"
+
+            on_macos do
+              if Hardware::CPU.arm?
+                url "https://github.com/codelake-dev/licscan/releases/download/${VERSION}/licscan-darwin-arm64"
+                sha256 "${{ steps.sha.outputs.darwin_arm64 }}"
+
+                def install
+                  bin.install "licscan-darwin-arm64" => "licscan"
+                end
+              else
+                url "https://github.com/codelake-dev/licscan/releases/download/${VERSION}/licscan-darwin-amd64"
+                sha256 "${{ steps.sha.outputs.darwin_amd64 }}"
+
+                def install
+                  bin.install "licscan-darwin-amd64" => "licscan"
+                end
+              end
+            end
+
+            on_linux do
+              if Hardware::CPU.arm?
+                url "https://github.com/codelake-dev/licscan/releases/download/${VERSION}/licscan-linux-arm64"
+                sha256 "${{ steps.sha.outputs.linux_arm64 }}"
+
+                def install
+                  bin.install "licscan-linux-arm64" => "licscan"
+                end
+              else
+                url "https://github.com/codelake-dev/licscan/releases/download/${VERSION}/licscan-linux-amd64"
+                sha256 "${{ steps.sha.outputs.linux_amd64 }}"
+
+                def install
+                  bin.install "licscan-linux-amd64" => "licscan"
+                end
+              end
+            end
+
+            test do
+              assert_match "v#{version}", shell_output("#{bin}/licscan --version")
+            end
+          end
+          RUBY
+
+      - name: Push updated formula
+        working-directory: tap
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/licscan.rb
+          git commit -m "Update licscan to ${{ github.ref_name }}"
+          git push

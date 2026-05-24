@@ -55,20 +55,14 @@ tidy:
 clean:
 	rm -rf $(BIN_DIR) coverage.out coverage.html dist/
 
-.PHONY: release-dry-run
-release-dry-run:
-	@which goreleaser > /dev/null || (echo "goreleaser not installed: https://goreleaser.com/install/"; exit 1)
-	goreleaser release --snapshot --clean --skip=publish
-
 .PHONY: help
 help:
 	@echo "Targets:"
-	@echo "  build              Build the binary into $(BIN_DIR)/$(BINARY)"
-	@echo "  install            go install into $(INSTALL_DIR)"
-	@echo "  test               Run tests with race detector"
-	@echo "  cover              Run tests with coverage report"
-	@echo "  lint               Run golangci-lint"
-	@echo "  fmt                Format all Go source"
-	@echo "  tidy               go mod tidy"
-	@echo "  clean              Remove build artefacts"
-	@echo "  release-dry-run    Local goreleaser dry-run (no publish)"
+	@echo "  build      Build the binary into $(BIN_DIR)/$(BINARY)"
+	@echo "  install    go install into $(INSTALL_DIR)"
+	@echo "  test       Run tests with race detector"
+	@echo "  cover      Run tests with coverage report"
+	@echo "  lint       Run golangci-lint config-verify + run"
+	@echo "  fmt        Format all Go source"
+	@echo "  tidy       go mod tidy"
+	@echo "  clean      Remove build artefacts"
