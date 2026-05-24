@@ -179,15 +179,30 @@ If no `.licscan.yml` is present, a built-in default policy applies: denies GPL /
 
 ### GitHub Actions
 
+The recommended way is the official **[`codelake-dev/licscan-action`](https://github.com/codelake-dev/licscan-action)** — installs the binary, scans the repo, posts the markdown report as a PR comment, and uploads the report as a workflow artefact in one step:
+
+```yaml
+on: [pull_request]
+jobs:
+  licenses:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: codelake-dev/licscan-action@v1
+```
+
+See the [action README](https://github.com/codelake-dev/licscan-action#readme) for all inputs (`version` pin, `path`, `cra`, `fail-on-violation`, `pr-comment`, ...) and recipes (release-time CRA archive, custom logic via outputs).
+
+If you'd rather wire the CLI manually:
+
 ```yaml
 - name: License compliance
   run: |
-    curl -L https://github.com/codelake-dev/licscan/releases/latest/download/licscan_Linux_x86_64.tar.gz | tar xz
-    ./licscan scan . --ci --format json > license-report.json
-- uses: actions/upload-artifact@v4
-  with:
-    name: license-report
-    path: license-report.json
+    curl -fsSL https://install.licscan.dev/install.sh | sh
+    licscan scan . --ci --format markdown
 ```
 
 ### GitLab CI
