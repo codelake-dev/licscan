@@ -1,0 +1,201 @@
+package format
+
+import (
+	"fmt"
+	"io"
+	"sort"
+	"strings"
+	"time"
+
+	"github.com/codelake-dev/licscan/internal/scanner"
+	"github.com/codelake-dev/licscan/internal/version"
+)
+
+// markdownCollapseThreshold hides the dependency table inside a <details>
+// block when the project has more deps than this — keeps PR-comment
+// rendering reasonable for big lock-files (337 deps would otherwise
+// flood the comment thread).
+const markdownCollapseThreshold = 30
+
+// Verdict labels — duplicated locally in the format package to avoid
+// importing the policy package (which already imports scanner).
+// Same string values as policy.Verdict* constants.
+const (
+	verdictAllow  = "allow"
+	verdictWarn   = "warn"
+	verdictDeny   = "deny"
+	verdictExempt = "exempt"
+)
+
+// Markdown renders a GitHub-flavored Markdown report.
+//
+// Designed to be pasted as-is into PR comments, issue bodies, READMEs,
+// or Slack messages. Tables use `|` / `---` syntax; risk markers use
+// the same emoji set as the terminal/HTML output so the visual mapping
+// stays consistent across renderers.
+func Markdown(w io.Writer, result *scanner.Result) error {
+	var b strings.Builder
+
+	writeMarkdownHeader(&b, result)
+	writeMarkdownSummary(&b, result)
+	writeMarkdownPolicyViolations(&b, result)
+	writeMarkdownDependencies(&b, result)
+	writeMarkdownFooter(&b)
+
+	_, err := io.WriteString(w, b.String())
+	return err
+}
+
+func writeMarkdownHeader(b *strings.Builder, result *scanner.Result) {
+	fmt.Fprintln(b, "# LicScan Report")
+	fmt.Fprintln(b)
+	fmt.Fprintf(b, "**Scan path:** `%s`  \n", result.ScanPath)
+	if len(result.Detectors) > 0 {
+		fmt.Fprintf(b, "**Detectors:** %s  \n", strings.Join(result.Detectors, ", "))
+	}
+	fmt.Fprintf(b, "**Total dependencies:** %d  \n", len(result.Dependencies))
+	fmt.Fprintf(b, "**Generated:** %s\n", time.Now().UTC().Format(time.RFC3339))
+	fmt.Fprintln(b)
+}
+
+func writeMarkdownSummary(b *strings.Builder, result *scanner.Result) {
+	fmt.Fprintln(b, "## Summary")
+	fmt.Fprintln(b)
+	fmt.Fprintln(b, "| Risk | Count |")
+	fmt.Fprintln(b, "|---|---:|")
+
+	order := []scanner.RiskLevel{
+		scanner.RiskViral,
+		scanner.RiskStrongCopyleft,
+		scanner.RiskWeakCopyleft,
+		scanner.RiskPermissive,
+		scanner.RiskUnknown,
+	}
+	for _, lvl := range order {
+		label := lvl.String()
+		fmt.Fprintf(b, "| %s %s | %d |\n", lvl.Emoji(), label, result.Summary[label])
+	}
+	fmt.Fprintln(b)
+}
+
+func writeMarkdownPolicyViolations(b *strings.Builder, result *scanner.Result) {
+	denied := make([]scanner.Dependency, 0)
+	for _, d := range result.Dependencies {
+		if d.Verdict == verdictDeny {
+			denied = append(denied, d)
+		}
+	}
+	if len(denied) == 0 {
+		return
+	}
+
+	fmt.Fprintln(b, "## Policy violations")
+	fmt.Fprintln(b)
+	fmt.Fprintf(b, "%d dependency/ies denied by policy:\n\n", len(denied))
+	fmt.Fprintln(b, "| Package | Version | License | Reason |")
+	fmt.Fprintln(b, "|---|---|---|---|")
+	for _, d := range denied {
+		fmt.Fprintf(b, "| `%s` | `%s` | `%s` | %s |\n",
+			d.Name, d.Version, d.PrimaryLicense(), escapeMarkdownCell(d.Reason))
+	}
+	fmt.Fprintln(b)
+}
+
+func writeMarkdownDependencies(b *strings.Builder, result *scanner.Result) {
+	if len(result.Dependencies) == 0 {
+		fmt.Fprintln(b, "## Dependencies")
+		fmt.Fprintln(b)
+		fmt.Fprintln(b, "_No dependencies found._")
+		fmt.Fprintln(b)
+		return
+	}
+
+	sorted := make([]scanner.Dependency, len(result.Dependencies))
+	copy(sorted, result.Dependencies)
+	sort.SliceStable(sorted, func(i, j int) bool {
+		if sorted[i].PrimaryRisk() != sorted[j].PrimaryRisk() {
+			return sorted[i].PrimaryRisk() > sorted[j].PrimaryRisk()
+		}
+		return sorted[i].Name < sorted[j].Name
+	})
+
+	showVerdict := false
+	for _, d := range sorted {
+		if d.Verdict != "" {
+			showVerdict = true
+			break
+		}
+	}
+
+	collapse := len(sorted) > markdownCollapseThreshold
+
+	fmt.Fprintln(b, "## Dependencies")
+	fmt.Fprintln(b)
+
+	if collapse {
+		fmt.Fprintf(b, "<details>\n<summary>%d dependencies — click to expand</summary>\n\n",
+			len(sorted))
+	}
+
+	if showVerdict {
+		fmt.Fprintln(b, "| Risk | Package | Version | License | Scope | Ecosystem | Verdict |")
+		fmt.Fprintln(b, "|---|---|---|---|---|---|---|")
+	} else {
+		fmt.Fprintln(b, "| Risk | Package | Version | License | Scope | Ecosystem |")
+		fmt.Fprintln(b, "|---|---|---|---|---|---|")
+	}
+
+	for _, d := range sorted {
+		risk := d.PrimaryRisk()
+		scope := "transitive"
+		if d.Direct {
+			scope = "direct"
+		}
+		if showVerdict {
+			fmt.Fprintf(b, "| %s %s | `%s` | `%s` | `%s` | %s | %s | %s |\n",
+				risk.Emoji(), risk.String(), d.Name, d.Version,
+				d.PrimaryLicense(), scope, d.Ecosystem, markdownVerdictLabel(d.Verdict))
+		} else {
+			fmt.Fprintf(b, "| %s %s | `%s` | `%s` | `%s` | %s | %s |\n",
+				risk.Emoji(), risk.String(), d.Name, d.Version,
+				d.PrimaryLicense(), scope, d.Ecosystem)
+		}
+	}
+
+	if collapse {
+		fmt.Fprintln(b, "\n</details>")
+	}
+	fmt.Fprintln(b)
+}
+
+func writeMarkdownFooter(b *strings.Builder) {
+	fmt.Fprintln(b, "---")
+	fmt.Fprintf(b,
+		"_Generated by [licscan](https://github.com/codelake-dev/licscan) %s — codelake Technologies LLC, an Akyros Labs brand._\n",
+		version.Short())
+}
+
+func markdownVerdictLabel(v string) string {
+	switch v {
+	case verdictAllow:
+		return "✓ allow"
+	case verdictWarn:
+		return "⚠ warn"
+	case verdictDeny:
+		return "✗ deny"
+	case verdictExempt:
+		return "○ exempt"
+	default:
+		return v
+	}
+}
+
+// escapeMarkdownCell makes a string safe to put inside a Markdown table
+// cell — pipes break the column boundary and would corrupt the table
+// rendering. Newlines collapse to spaces for the same reason.
+func escapeMarkdownCell(s string) string {
+	s = strings.ReplaceAll(s, "|", `\|`)
+	s = strings.ReplaceAll(s, "\n", " ")
+	s = strings.ReplaceAll(s, "\r", " ")
+	return s
+}

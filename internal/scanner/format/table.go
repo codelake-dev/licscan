@@ -116,13 +116,13 @@ func writeDependencyTable(w io.Writer, deps []scanner.Dependency) error {
 // in the policy package.
 func verdictLabel(v string) string {
 	switch v {
-	case "allow":
+	case verdictAllow:
 		return "✓ allow"
-	case "warn":
+	case verdictWarn:
 		return "⚠ warn"
-	case "deny":
+	case verdictDeny:
 		return "✗ deny"
-	case "exempt":
+	case verdictExempt:
 		return "○ exempt"
 	default:
 		return v

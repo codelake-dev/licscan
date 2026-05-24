@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Phase 10 (Markdown formatter)
+
+- **`--format markdown`** now produces a real GitHub-flavored Markdown report (was JSON placeholder). Designed to paste cleanly into PR comments, issue bodies, READMEs, or Slack.
+- Includes summary table (per-risk-level counts with emojis), full dependency table sorted by descending risk, and a footer attribution.
+- **Auto-collapse**: dependency tables with more than 30 entries wrap in a `<details>` block so PR comments stay readable for big lockfiles (337-dep Astro projects no longer flood the thread).
+- **Policy-aware**: when the policy engine has run, a dedicated `## Policy violations` section lists denied deps with their reason, and the main dep table gains a `Verdict` column (`✓ allow` / `⚠ warn` / `✗ deny` / `○ exempt`).
+- Markdown-cell escaping: pipes and newlines in policy reasons are sanitised so the table never breaks.
+
+### Fixed
+
+- Local `make build` produced `vv0.10.0-dirty` (double `v`) because `git describe` already returned `v0.10.0-dirty` and `version.Short()` prefixed another `v`. Makefile now strips the leading `v` so `Short()` adds it back exactly once — matches the release-pipeline behaviour.
+
 ### Added — Phase 8 (EU CRA Compliance Mode)
 
 The headline differentiator. No existing OSS license scanner emits EU CRA Article 13 evidence out-of-the-box — licensee, fossa, TLDR Legal all stop at license inventory.

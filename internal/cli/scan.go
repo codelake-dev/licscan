@@ -181,8 +181,7 @@ func renderResult(w io.Writer, formatName string, result *scanner.Result) error 
 	case "spdx":
 		return format.SPDX(w, result)
 	case "markdown":
-		// Placeholder — exporter lands in a subsequent sprint.
-		return format.JSON(w, result)
+		return format.Markdown(w, result)
 	default:
 		return fmt.Errorf("unsupported format %q", formatName)
 	}

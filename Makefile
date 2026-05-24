@@ -4,7 +4,9 @@ CMD         := ./cmd/licscan
 BIN_DIR     := ./bin
 INSTALL_DIR := $(shell go env GOPATH)/bin
 
-VERSION    ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
+# Strip the leading 'v' from git-describe output — internal/version.Short()
+# adds it back. Releasing v0.10.0 → ldflags Version=0.10.0 → Short() = "v0.10.0".
+VERSION    ?= $(shell git describe --tags --always --dirty 2>/dev/null | sed 's/^v//' || echo dev)
 COMMIT     ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo none)
 BUILD_DATE ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 
