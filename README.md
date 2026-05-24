@@ -59,7 +59,7 @@ curl -fsSL https://install.licscan.dev/install.sh | sh
 ```
 
 Installs the latest stable release into `/usr/local/bin/licscan`. Override with:
-- `LICSCAN_VERSION=v0.9.0` — pin a specific version
+- `LICSCAN_VERSION=v0.11.0` — pin a specific version
 - `LICSCAN_INSTALL_DIR=$HOME/.local/bin` — install elsewhere (no sudo)
 
 ### Homebrew (macOS, Linux)
@@ -208,6 +208,26 @@ license_scan:
 ```
 
 ---
+
+## Markdown report (PR comments / READMEs)
+
+```bash
+licscan scan . --format markdown
+```
+
+Produces a GitHub-flavored Markdown report — paste it into a PR comment, an issue body, a README, or a Slack message. Includes:
+
+- Summary table per risk level (with emoji markers)
+- Full dependency table sorted by descending risk
+- Auto-collapses (`<details>`) when the dep count exceeds 30, so big lockfiles stay readable in PR threads
+- Adds a `Verdict` column and a `## Policy violations` section when a `.licscan.yml` is in effect
+
+Typical CI snippet (post the report as a PR comment):
+
+```bash
+licscan scan . --format markdown > /tmp/report.md
+gh pr comment "$PR_NUMBER" --body-file /tmp/report.md
+```
 
 ## SBOM export
 
