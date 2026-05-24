@@ -2,9 +2,14 @@ package cli
 
 import (
 	"fmt"
+	"io"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
+
+	"github.com/codelake-ai/licscan/internal/scanner"
+	"github.com/codelake-ai/licscan/internal/scanner/detectors"
+	"github.com/codelake-ai/licscan/internal/scanner/format"
 )
 
 // supportedFormats is the closed set of --format values. Kept here so the
@@ -54,6 +59,12 @@ Output formats:
 	return cmd
 }
 
+// defaultDetectors is the canonical detector set the CLI ships with.
+// Each new package-manager detector gets added here.
+var defaultDetectors = []scanner.Detector{
+	&detectors.GoMod{},
+}
+
 func runScan(cmd *cobra.Command, path string, opts *scanOptions) error {
 	if !isValidFormat(opts.format) {
 		return fmt.Errorf("unsupported format %q (allowed: %v)", opts.format, supportedFormats)
@@ -64,12 +75,42 @@ func runScan(cmd *cobra.Command, path string, opts *scanOptions) error {
 		return fmt.Errorf("resolve path %q: %w", path, err)
 	}
 
-	// Scanner implementation lands in the next sprint. For now we surface
-	// the resolved configuration so users can confirm flag parsing works
-	// and integration scripts have a stable contract to test against.
-	return writeln(cmd.OutOrStdout(),
-		"licscan scan placeholder — path=%s format=%s ci=%t cra=%t",
-		absPath, opts.format, opts.ci, opts.cra)
+	result, err := scanner.New(defaultDetectors...).Scan(absPath)
+	if err != nil {
+		return fmt.Errorf("scan: %w", err)
+	}
+
+	if err := renderResult(cmd.OutOrStdout(), opts.format, result); err != nil {
+		return fmt.Errorf("render %s: %w", opts.format, err)
+	}
+
+	// CI mode: exit code 1 if any risk-level above WeakCopyleft is present.
+	// Policy-engine-driven exits land with the .licscan.yml feature.
+	if opts.ci && result.HasViolations() {
+		return fmt.Errorf("policy violation: %d high-risk dependency/ies found",
+			result.Summary[scanner.RiskStrongCopyleft.String()]+result.Summary[scanner.RiskViral.String()])
+	}
+
+	if opts.cra {
+		_, _ = fmt.Fprintln(cmd.ErrOrStderr(),
+			"note: EU CRA-compliant SBOM emission lands once the dedicated exporter ships in the next sprint")
+	}
+
+	return nil
+}
+
+func renderResult(w io.Writer, formatName string, result *scanner.Result) error {
+	switch formatName {
+	case "table":
+		return format.Table(w, result)
+	case "json":
+		return format.JSON(w, result)
+	case "html", "cyclonedx", "spdx", "markdown":
+		// Placeholders — exporters land in subsequent sprints.
+		return format.JSON(w, result)
+	default:
+		return fmt.Errorf("unsupported format %q", formatName)
+	}
 }
 
 func isValidFormat(format string) bool {

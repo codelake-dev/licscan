@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+### Added — Phase 2 (go.mod detector)
+
+- **Scanner engine**: `internal/scanner` with pluggable `Detector` interface and orchestrator.
+- **Risk classification**: 5-level model (Unknown / Permissive / Weak Copyleft / Strong Copyleft / Viral) covering 40+ SPDX identifiers.
+- **SPDX text identifier**: heuristic matcher for MIT / Apache-2.0 / BSD-2-Clause / BSD-3-Clause / ISC / 0BSD / GPL-2 / GPL-3 / LGPL-2.1 / LGPL-3 / AGPL-3 / MPL-2 / EPL / CDDL / EUPL / SSPL / BUSL / Unlicense / CC0 / Zlib.
+- **go.mod detector**: parses `go.mod` (direct + indirect), resolves licenses from the local Go module cache, marks unresolved as `Unknown` with a remediation note.
+- **Table formatter**: aligned terminal output sorted by descending risk, with risk emojis.
+- **JSON formatter**: stable schema for CI/CD consumption.
+- **CI mode**: `--ci` exits non-zero when any Strong-Copyleft / Viral dependency is found.
+
+### Added — Phase 1 (foundation)
 
 - Foundation skeleton: Cobra-based CLI with `scan`, `about`, `--version`, `--help`.
 - ASCII banner with attribution to codelake Technologies LLC.

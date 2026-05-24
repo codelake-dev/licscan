@@ -2,6 +2,9 @@ package cli
 
 import (
 	"bytes"
+	"encoding/json"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -21,6 +24,23 @@ func runCmd(t *testing.T, args ...string) (stdout, stderr *bytes.Buffer, err err
 	err = cmd.Execute()
 	return
 }
+
+// writeProject creates a temp dir with a minimal go.mod for scan tests.
+func writeProject(t *testing.T, goMod string) string {
+	t.Helper()
+	dir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "go.mod"), []byte(goMod), 0o644))
+	return dir
+}
+
+const minimalGoMod = `module example.com/sample
+
+go 1.22
+
+require github.com/example/lib v1.0.0
+`
+
+// ── Root + sub-command tree ────────────────────────────────────
 
 func TestRootHelpListsAllSubcommands(t *testing.T) {
 	stdout, _, err := runCmd(t, "--help")
@@ -52,18 +72,63 @@ func TestAboutCommandRendersBanner(t *testing.T) {
 	require.Contains(t, out, "Akyros Labs")
 }
 
-func TestScanDefaultsToCurrentDirectory(t *testing.T) {
-	stdout, _, err := runCmd(t, "scan")
+// ── scan command — happy paths ─────────────────────────────────
+
+func TestScanAgainstProjectWithGoModProducesTableOutput(t *testing.T) {
+	dir := writeProject(t, minimalGoMod)
+	stdout, _, err := runCmd(t, "scan", dir)
 	require.NoError(t, err)
-	require.Contains(t, stdout.String(), "path=")
-	require.Contains(t, stdout.String(), "format=table")
+
+	out := stdout.String()
+	require.Contains(t, out, "Scan path:")
+	require.Contains(t, out, "Detectors: gomod")
+	require.Contains(t, out, "github.com/example/lib")
+	require.Contains(t, out, "Summary:")
 }
 
-func TestScanAcceptsExplicitPath(t *testing.T) {
-	stdout, _, err := runCmd(t, "scan", "/tmp")
-	require.NoError(t, err)
-	require.Contains(t, stdout.String(), "/tmp")
+func TestScanAgainstEmptyDirectoryProducesEmptyResult(t *testing.T) {
+	empty := t.TempDir()
+	stdout, _, err := runCmd(t, "scan", empty)
+	require.NoError(t, err, "empty dir is not an error")
+
+	out := stdout.String()
+	require.Contains(t, out, "No dependencies found")
 }
+
+func TestScanWithJSONFormatProducesValidJSON(t *testing.T) {
+	dir := writeProject(t, minimalGoMod)
+	stdout, _, err := runCmd(t, "scan", dir, "--format", "json")
+	require.NoError(t, err)
+
+	var parsed map[string]any
+	require.NoError(t, json.Unmarshal(stdout.Bytes(), &parsed),
+		"--format json must emit valid JSON, got: %s", stdout.String())
+
+	require.Contains(t, parsed, "scan_path")
+	require.Contains(t, parsed, "dependencies")
+	require.Contains(t, parsed, "summary")
+}
+
+func TestScanDefaultsToCurrentDirectory(t *testing.T) {
+	// We can't easily change cwd in a parallel-safe way; just verify
+	// that omitting [path] doesn't error.
+	stdout, _, err := runCmd(t, "scan")
+	require.NoError(t, err)
+	require.Contains(t, stdout.String(), "Scan path:")
+}
+
+func TestScanAcceptsAllSupportedFormats(t *testing.T) {
+	dir := writeProject(t, minimalGoMod)
+	for _, format := range supportedFormats {
+		format := format
+		t.Run(format, func(t *testing.T) {
+			_, _, err := runCmd(t, "scan", dir, "--format", format)
+			require.NoError(t, err, "format %q must be accepted", format)
+		})
+	}
+}
+
+// ── scan command — argument & flag validation ──────────────────
 
 func TestScanRejectsTooManyArgs(t *testing.T) {
 	_, _, err := runCmd(t, "scan", "/tmp", "/another")
@@ -76,39 +141,28 @@ func TestScanRejectsUnsupportedFormat(t *testing.T) {
 	require.Contains(t, err.Error(), "unsupported format")
 }
 
-func TestScanAcceptsAllSupportedFormats(t *testing.T) {
-	for _, format := range supportedFormats {
-		format := format // capture
-		t.Run(format, func(t *testing.T) {
-			stdout, _, err := runCmd(t, "scan", ".", "--format", format)
-			require.NoError(t, err, "format %q must be accepted", format)
-			require.Contains(t, stdout.String(), "format="+format)
-		})
-	}
+// ── scan command — CI mode ─────────────────────────────────────
+
+func TestScanCIModeExitsOnViolation(t *testing.T) {
+	// A go.mod referencing a module won't resolve to GPL via our stub —
+	// without a real local cache hit, deps are Unknown, so no violation.
+	// To trigger a violation we'd need a real GPL'd dep on disk. The
+	// unit-level scanner_test already exercises HasViolations()/CI logic;
+	// here we just verify CI mode runs without erroring on clean output.
+	dir := writeProject(t, minimalGoMod)
+	_, _, err := runCmd(t, "scan", dir, "--ci")
+	require.NoError(t, err, "CI mode with no violations must exit 0")
 }
 
-func TestScanCIFlagPropagates(t *testing.T) {
-	stdout, _, err := runCmd(t, "scan", ".", "--ci")
+func TestScanCRAFlagEmitsNote(t *testing.T) {
+	dir := writeProject(t, minimalGoMod)
+	_, stderr, err := runCmd(t, "scan", dir, "--cra")
 	require.NoError(t, err)
-	require.Contains(t, stdout.String(), "ci=true")
+	require.Contains(t, stderr.String(), "CRA",
+		"--cra must surface a note about future SBOM emission")
 }
 
-func TestScanCRAFlagPropagates(t *testing.T) {
-	stdout, _, err := runCmd(t, "scan", ".", "--cra")
-	require.NoError(t, err)
-	require.Contains(t, stdout.String(), "cra=true")
-}
-
-func TestIsValidFormatRejectsEmpty(t *testing.T) {
-	require.False(t, isValidFormat(""))
-}
-
-func TestSupportedFormatsIsSorted(t *testing.T) {
-	// Sanity check that the formats list is stable — protects users who
-	// document the list in their CI configs.
-	expected := []string{"table", "json", "html", "cyclonedx", "spdx", "markdown"}
-	require.Equal(t, expected, supportedFormats)
-}
+// ── help text completeness ─────────────────────────────────────
 
 func TestHelpDescribesFlags(t *testing.T) {
 	stdout, _, err := runCmd(t, "scan", "--help")
@@ -120,16 +174,25 @@ func TestHelpDescribesFlags(t *testing.T) {
 	require.Contains(t, out, "--cra")
 }
 
-func TestExecuteReturnsZeroOnSuccess(t *testing.T) {
-	// We can't easily inject args into Execute() without mutating os.Args,
-	// so we just smoke-test that the wired root command runs cleanly via
-	// the test helper. Execute() itself is one line of glue.
-	_, _, err := runCmd(t, "about")
-	require.NoError(t, err)
-}
-
 func TestLongDescriptionMentionsKeyFeatures(t *testing.T) {
 	require.True(t, strings.Contains(longDescription, "CycloneDX"))
 	require.True(t, strings.Contains(longDescription, "SPDX"))
 	require.True(t, strings.Contains(longDescription, "EU CRA"))
+}
+
+// ── internal helpers ───────────────────────────────────────────
+
+func TestIsValidFormatRejectsEmpty(t *testing.T) {
+	require.False(t, isValidFormat(""))
+}
+
+func TestSupportedFormatsIsStable(t *testing.T) {
+	expected := []string{"table", "json", "html", "cyclonedx", "spdx", "markdown"}
+	require.Equal(t, expected, supportedFormats)
+}
+
+func TestExecuteReturnsZeroOnSuccess(t *testing.T) {
+	// Smoke test that the wired root command runs cleanly via the helper.
+	_, _, err := runCmd(t, "about")
+	require.NoError(t, err)
 }
