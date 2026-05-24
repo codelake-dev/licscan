@@ -106,7 +106,9 @@ func renderResult(w io.Writer, formatName string, result *scanner.Result) error 
 		return format.Table(w, result)
 	case "json":
 		return format.JSON(w, result)
-	case "html", "cyclonedx", "spdx", "markdown":
+	case "html":
+		return format.HTML(w, result)
+	case "cyclonedx", "spdx", "markdown":
 		// Placeholders — exporters land in subsequent sprints.
 		return format.JSON(w, result)
 	default:

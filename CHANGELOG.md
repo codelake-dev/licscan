@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Phase 4 (HTML formatter)
+
+- **Dark-theme HTML report**: single self-contained HTML5 file, no external CSS/JS, can be archived as CI artifact and opened anywhere.
+- **Summary cards**: per-risk-level count with colour-coded badges (green/yellow/red/purple/grey).
+- **Sortable dependency table**: rows sorted by descending risk so the dangerous stuff appears first.
+- **XSS-safe rendering**: all user-supplied strings (package names, license IDs, paths) flow through `html/template` for automatic escaping. Malicious package names like `<script>alert(1)</script>` are properly escaped.
+- **Detector-error surfacing**: per-detector errors rendered as a dedicated alert section.
+- **`licscan scan . --format html > report.html`** now produces a real report (was JSON placeholder).
+
 ### Added — Phase 3 (npm detector)
 
 - **npm detector**: parses `package.json` (direct deps across `dependencies`, `devDependencies`, `peerDependencies`, `optionalDependencies`) and `package-lock.json`. Handles all three lockfile generations: v1 (nested tree), v2 (compat + flat), v3 (flat only).
