@@ -108,8 +108,12 @@ func renderResult(w io.Writer, formatName string, result *scanner.Result) error 
 		return format.JSON(w, result)
 	case "html":
 		return format.HTML(w, result)
-	case "cyclonedx", "spdx", "markdown":
-		// Placeholders — exporters land in subsequent sprints.
+	case "cyclonedx":
+		return format.CycloneDX(w, result)
+	case "spdx":
+		return format.SPDX(w, result)
+	case "markdown":
+		// Placeholder — exporter lands in a subsequent sprint.
 		return format.JSON(w, result)
 	default:
 		return fmt.Errorf("unsupported format %q", formatName)
