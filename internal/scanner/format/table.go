@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/codelake-ai/licscan/internal/scanner"
+	"github.com/codelake-dev/licscan/internal/scanner"
 )
 
 // Table renders a human-readable terminal table.

@@ -1,12 +1,12 @@
 // Command licscan is the open-source license & compliance scanner CLI.
 //
-// See `licscan --help` or https://github.com/codelake-ai/licscan for usage.
+// See `licscan --help` or https://github.com/codelake-dev/licscan for usage.
 package main
 
 import (
 	"os"
 
-	"github.com/codelake-ai/licscan/internal/cli"
+	"github.com/codelake-dev/licscan/internal/cli"
 )
 
 func main() {

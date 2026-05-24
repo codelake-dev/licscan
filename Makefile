@@ -1,5 +1,5 @@
 BINARY      := licscan
-PKG         := github.com/codelake-ai/licscan
+PKG         := github.com/codelake-dev/licscan
 CMD         := ./cmd/licscan
 BIN_DIR     := ./bin
 INSTALL_DIR := $(shell go env GOPATH)/bin

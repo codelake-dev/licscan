@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/codelake-ai/licscan/internal/scanner"
+	"github.com/codelake-dev/licscan/internal/scanner"
 )
 
 func TestJSONProducesValidParseableOutput(t *testing.T) {

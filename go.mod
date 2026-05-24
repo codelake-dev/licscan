@@ -1,4 +1,4 @@
-module github.com/codelake-ai/licscan
+module github.com/codelake-dev/licscan
 
 go 1.25.0
 

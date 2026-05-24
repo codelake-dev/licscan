@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/codelake-ai/licscan/internal/scanner"
+	"github.com/codelake-dev/licscan/internal/scanner"
 )
 
 // JSON renders the Result as pretty-printed JSON. The schema is stable

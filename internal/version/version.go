@@ -8,9 +8,9 @@ import "fmt"
 
 // These variables are overridden at build time via:
 //
-//	-ldflags "-X github.com/codelake-ai/licscan/internal/version.Version=$(git describe --tags)"
-//	-ldflags "-X github.com/codelake-ai/licscan/internal/version.Commit=$(git rev-parse HEAD)"
-//	-ldflags "-X github.com/codelake-ai/licscan/internal/version.BuildDate=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+//	-ldflags "-X github.com/codelake-dev/licscan/internal/version.Version=$(git describe --tags)"
+//	-ldflags "-X github.com/codelake-dev/licscan/internal/version.Commit=$(git rev-parse HEAD)"
+//	-ldflags "-X github.com/codelake-dev/licscan/internal/version.BuildDate=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 var (
 	Version   = "dev"
 	Commit    = "none"

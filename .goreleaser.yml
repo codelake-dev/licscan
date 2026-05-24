@@ -27,9 +27,9 @@ builds:
       - -trimpath
     ldflags:
       - -s -w
-      - -X github.com/codelake-ai/licscan/internal/version.Version={{ .Version }}
-      - -X github.com/codelake-ai/licscan/internal/version.Commit={{ .ShortCommit }}
-      - -X github.com/codelake-ai/licscan/internal/version.BuildDate={{ .Date }}
+      - -X github.com/codelake-dev/licscan/internal/version.Version={{ .Version }}
+      - -X github.com/codelake-dev/licscan/internal/version.Commit={{ .ShortCommit }}
+      - -X github.com/codelake-dev/licscan/internal/version.BuildDate={{ .Date }}
 
 archives:
   - id: default
@@ -76,7 +76,7 @@ changelog:
 
 release:
   github:
-    owner: codelake-ai
+    owner: codelake-dev
     name: licscan
   draft: false
   prerelease: auto
@@ -86,7 +86,7 @@ release:
 
     Open-source license & compliance scanner for modern codebases.
 
-    See [CHANGELOG.md](https://github.com/codelake-ai/licscan/blob/main/CHANGELOG.md) for details.
+    See [CHANGELOG.md](https://github.com/codelake-dev/licscan/blob/main/CHANGELOG.md) for details.
   footer: |
     ---
     LicScan · by codelake Technologies LLC. An Akyros Labs brand.
@@ -94,9 +94,9 @@ release:
 brews:
   - name: licscan
     repository:
-      owner: codelake-ai
+      owner: codelake-dev
       name: homebrew-tap
-    homepage: https://github.com/codelake-ai/licscan
+    homepage: https://github.com/codelake-dev/licscan
     description: Open-source license & compliance scanner
     license: Apache-2.0
     install: |

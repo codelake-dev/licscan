@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/codelake-ai/licscan/internal/scanner"
+	"github.com/codelake-dev/licscan/internal/scanner"
 )
 
 // Npm is the detector for Node.js projects (package.json + package-lock.json).

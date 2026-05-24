@@ -11,11 +11,11 @@
 
 **Open-source license & compliance scanner for modern codebases.**
 
-[![CI](https://github.com/codelake-ai/licscan/actions/workflows/ci.yml/badge.svg)](https://github.com/codelake-ai/licscan/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/codelake-ai/licscan)](https://github.com/codelake-ai/licscan/releases)
+[![CI](https://github.com/codelake-dev/licscan/actions/workflows/ci.yml/badge.svg)](https://github.com/codelake-dev/licscan/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/codelake-dev/licscan)](https://github.com/codelake-dev/licscan/releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![Go Reference](https://pkg.go.dev/badge/github.com/codelake-ai/licscan.svg)](https://pkg.go.dev/github.com/codelake-ai/licscan)
-[![Go Report Card](https://goreportcard.com/badge/github.com/codelake-ai/licscan)](https://goreportcard.com/report/github.com/codelake-ai/licscan)
+[![Go Reference](https://pkg.go.dev/badge/github.com/codelake-dev/licscan.svg)](https://pkg.go.dev/github.com/codelake-dev/licscan)
+[![Go Report Card](https://goreportcard.com/badge/github.com/codelake-dev/licscan)](https://goreportcard.com/report/github.com/codelake-dev/licscan)
 
 </div>
 
@@ -55,29 +55,29 @@ It is built for engineering teams who want license compliance to be a determinis
 ### Homebrew (macOS, Linux)
 
 ```bash
-brew install codelake-ai/tap/licscan
+brew install codelake-dev/tap/licscan
 ```
 
 ### Scoop (Windows)
 
 ```powershell
-scoop bucket add codelake-ai https://github.com/codelake-ai/scoop-bucket
+scoop bucket add codelake-dev https://github.com/codelake-dev/scoop-bucket
 scoop install licscan
 ```
 
 ### Go install
 
 ```bash
-go install github.com/codelake-ai/licscan/cmd/licscan@latest
+go install github.com/codelake-dev/licscan/cmd/licscan@latest
 ```
 
 ### Manual download
 
-Pre-built binaries for Linux, macOS and Windows (amd64 + arm64) are attached to each [GitHub Release](https://github.com/codelake-ai/licscan/releases).
+Pre-built binaries for Linux, macOS and Windows (amd64 + arm64) are attached to each [GitHub Release](https://github.com/codelake-dev/licscan/releases).
 
 ```bash
 # Linux / macOS
-curl -L https://github.com/codelake-ai/licscan/releases/latest/download/licscan_$(uname -s)_$(uname -m).tar.gz | tar xz
+curl -L https://github.com/codelake-dev/licscan/releases/latest/download/licscan_$(uname -s)_$(uname -m).tar.gz | tar xz
 sudo mv licscan /usr/local/bin/
 ```
 
@@ -171,7 +171,7 @@ When `licscan scan . --ci` runs in a CI pipeline:
 ```yaml
 - name: License compliance
   run: |
-    curl -L https://github.com/codelake-ai/licscan/releases/latest/download/licscan_Linux_x86_64.tar.gz | tar xz
+    curl -L https://github.com/codelake-dev/licscan/releases/latest/download/licscan_Linux_x86_64.tar.gz | tar xz
     ./licscan scan . --ci --format json > license-report.json
 - uses: actions/upload-artifact@v4
   with:
@@ -186,7 +186,7 @@ license_scan:
   image: alpine:latest
   script:
     - apk add --no-cache curl tar
-    - curl -L https://github.com/codelake-ai/licscan/releases/latest/download/licscan_Linux_x86_64.tar.gz | tar xz
+    - curl -L https://github.com/codelake-dev/licscan/releases/latest/download/licscan_Linux_x86_64.tar.gz | tar xz
     - ./licscan scan . --ci
   artifacts:
     when: always
@@ -228,7 +228,7 @@ This is not legal advice — work with your DPO / compliance team to confirm sco
 Requires Go 1.22 or later.
 
 ```bash
-git clone https://github.com/codelake-ai/licscan
+git clone https://github.com/codelake-dev/licscan
 cd licscan
 
 # Run all tests

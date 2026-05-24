@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/codelake-ai/licscan/internal/version"
+	"github.com/codelake-dev/licscan/internal/version"
 )
 
 // Logo is the LicScan ASCII logo. Kept as a const so it never drifts

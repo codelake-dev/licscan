@@ -3,7 +3,7 @@ package cli
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/codelake-ai/licscan/internal/banner"
+	"github.com/codelake-dev/licscan/internal/banner"
 )
 
 func newAboutCommand() *cobra.Command {

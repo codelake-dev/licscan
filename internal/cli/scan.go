@@ -7,9 +7,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/codelake-ai/licscan/internal/scanner"
-	"github.com/codelake-ai/licscan/internal/scanner/detectors"
-	"github.com/codelake-ai/licscan/internal/scanner/format"
+	"github.com/codelake-dev/licscan/internal/scanner"
+	"github.com/codelake-dev/licscan/internal/scanner/detectors"
+	"github.com/codelake-dev/licscan/internal/scanner/format"
 )
 
 // supportedFormats is the closed set of --format values. Kept here so the

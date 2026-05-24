@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/codelake-ai/licscan/internal/version"
+	"github.com/codelake-dev/licscan/internal/version"
 )
 
 // Execute runs the root command. Returns the exit code so callers (main and

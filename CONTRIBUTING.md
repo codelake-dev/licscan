@@ -7,7 +7,7 @@ Thanks for considering a contribution! `licscan` is an open-source project under
 Requires Go 1.22+.
 
 ```bash
-git clone https://github.com/codelake-ai/licscan
+git clone https://github.com/codelake-dev/licscan
 cd licscan
 make test    # run the full test suite
 make lint    # run golangci-lint

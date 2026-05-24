@@ -7,7 +7,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/codelake-ai/licscan/internal/scanner"
+	"github.com/codelake-dev/licscan/internal/scanner"
 )
 
 // HTML renders the result as a single self-contained dark-theme HTML page.
@@ -253,7 +253,7 @@ const bodyTemplate = `<body>
 
   <footer>
     LicScan · by codelake Technologies LLC · An Akyros Labs brand ·
-    <a href="https://github.com/codelake-ai/licscan">github.com/codelake-ai/licscan</a>
+    <a href="https://github.com/codelake-dev/licscan">github.com/codelake-dev/licscan</a>
   </footer>
 </div>
 </body>

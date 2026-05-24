@@ -28,7 +28,7 @@ linters-settings:
   gocyclo:
     min-complexity: 15
   goimports:
-    local-prefixes: github.com/codelake-ai/licscan
+    local-prefixes: github.com/codelake-dev/licscan
   revive:
     rules:
       - name: exported
