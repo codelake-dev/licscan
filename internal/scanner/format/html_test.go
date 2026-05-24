@@ -146,7 +146,7 @@ func TestHTMLContainsDirectVsTransitiveLabels(t *testing.T) {
 	require.Contains(t, out, "transitive")
 }
 
-func TestHTMLIsSelfContainedNoExternalAssets(t *testing.T) {
+func TestHTMLIsSelfContainedNoExternalCSSOrJS(t *testing.T) {
 	var buf bytes.Buffer
 	require.NoError(t, HTML(&buf, sampleResult()))
 
@@ -155,6 +155,19 @@ func TestHTMLIsSelfContainedNoExternalAssets(t *testing.T) {
 		"must not reference external CSS")
 	require.NotContains(t, out, "<script src=",
 		"must not load external JS")
+}
+
+func TestHTMLIncludesCodelakeLogo(t *testing.T) {
+	var buf bytes.Buffer
+	require.NoError(t, HTML(&buf, sampleResult()))
+
+	out := buf.String()
+	require.Contains(t, out, "cdn.codelake.dev/logo/codelake_logo_w.png",
+		"codelake logo must be referenced from official CDN")
+	require.Contains(t, out, "height: 50px",
+		"logo must be sized 50px tall via CSS")
+	require.Contains(t, out, `alt="codelake"`,
+		"logo must carry a meaningful alt text for accessibility")
 }
 
 func TestRiskClassForCoverage(t *testing.T) {

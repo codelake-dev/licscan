@@ -137,6 +137,10 @@ body {
 }
 .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
 header { border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 32px; }
+header .top { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+header .top-text { flex: 1 1 auto; min-width: 0; }
+header .top-logo { flex: 0 0 auto; }
+header .top-logo img { height: 50px; width: auto; display: block; }
 header h1 { margin: 0 0 4px; font-size: 28px; font-weight: 600; }
 header .tagline { color: var(--muted); font-size: 14px; }
 header .meta { margin-top: 16px; color: var(--muted); font-size: 13px; }
@@ -192,8 +196,15 @@ footer a:hover { text-decoration: underline; }
 const bodyTemplate = `<body>
 <div class="container">
   <header>
-    <h1>LicScan Report</h1>
-    <div class="tagline">Open-source license &amp; compliance scan</div>
+    <div class="top">
+      <div class="top-text">
+        <h1>LicScan Report</h1>
+        <div class="tagline">Open-source license &amp; compliance scan</div>
+      </div>
+      <div class="top-logo">
+        <img src="https://cdn.codelake.dev/logo/codelake_logo_w.png" alt="codelake">
+      </div>
+    </div>
     <div class="meta">
       <div><strong>Scan path:</strong> {{.Result.ScanPath}}</div>
       <div><strong>Detectors:</strong>
