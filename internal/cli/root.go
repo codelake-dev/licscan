@@ -2,8 +2,6 @@
 package cli
 
 import (
-	"fmt"
-	"io"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -53,11 +51,3 @@ them by risk, checks compatibility, and exports SBOMs (CycloneDX / SPDX).
 
 Supports Composer, npm, pip, Go modules, Gemfile, Cargo and Maven.
 Includes an EU CRA Compliance mode for regulated software.`
-
-// writeln is a small helper so subcommands can write a line to the command
-// writer without pulling in fmt every time. Errors are propagated so tests
-// can detect broken writers.
-func writeln(w io.Writer, format string, args ...any) error {
-	_, err := fmt.Fprintf(w, format+"\n", args...)
-	return err
-}

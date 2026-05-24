@@ -26,10 +26,10 @@ func runCmd(t *testing.T, args ...string) (stdout, stderr *bytes.Buffer, err err
 }
 
 // writeProject creates a temp dir with a minimal go.mod for scan tests.
-func writeProject(t *testing.T, goMod string) string {
+func writeProject(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
-	require.NoError(t, os.WriteFile(filepath.Join(dir, "go.mod"), []byte(goMod), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "go.mod"), []byte(minimalGoMod), 0o644))
 	return dir
 }
 
@@ -75,7 +75,7 @@ func TestAboutCommandRendersBanner(t *testing.T) {
 // ── scan command — happy paths ─────────────────────────────────
 
 func TestScanAgainstProjectWithGoModProducesTableOutput(t *testing.T) {
-	dir := writeProject(t, minimalGoMod)
+	dir := writeProject(t)
 	stdout, _, err := runCmd(t, "scan", dir)
 	require.NoError(t, err)
 
@@ -96,7 +96,7 @@ func TestScanAgainstEmptyDirectoryProducesEmptyResult(t *testing.T) {
 }
 
 func TestScanWithJSONFormatProducesValidJSON(t *testing.T) {
-	dir := writeProject(t, minimalGoMod)
+	dir := writeProject(t)
 	stdout, _, err := runCmd(t, "scan", dir, "--format", "json")
 	require.NoError(t, err)
 
@@ -118,7 +118,7 @@ func TestScanDefaultsToCurrentDirectory(t *testing.T) {
 }
 
 func TestScanAcceptsAllSupportedFormats(t *testing.T) {
-	dir := writeProject(t, minimalGoMod)
+	dir := writeProject(t)
 	for _, format := range supportedFormats {
 		format := format
 		t.Run(format, func(t *testing.T) {
@@ -149,13 +149,13 @@ func TestScanCIModeExitsOnViolation(t *testing.T) {
 	// To trigger a violation we'd need a real GPL'd dep on disk. The
 	// unit-level scanner_test already exercises HasViolations()/CI logic;
 	// here we just verify CI mode runs without erroring on clean output.
-	dir := writeProject(t, minimalGoMod)
+	dir := writeProject(t)
 	_, _, err := runCmd(t, "scan", dir, "--ci")
 	require.NoError(t, err, "CI mode with no violations must exit 0")
 }
 
 func TestScanLoadsPolicyFromLicscanYml(t *testing.T) {
-	dir := writeProject(t, minimalGoMod)
+	dir := writeProject(t)
 	// Add a policy that denies an arbitrary license — we won't trigger
 	// any deps, but we verify it parses cleanly (a malformed .licscan.yml
 	// would surface as an error here).
@@ -169,7 +169,7 @@ func TestScanLoadsPolicyFromLicscanYml(t *testing.T) {
 }
 
 func TestScanErrorsOnMalformedPolicy(t *testing.T) {
-	dir := writeProject(t, minimalGoMod)
+	dir := writeProject(t)
 	require.NoError(t, os.WriteFile(
 		filepath.Join(dir, ".licscan.yml"),
 		[]byte("deny: [unterminated\nthis isn't yaml\n@@@"),
@@ -181,7 +181,7 @@ func TestScanErrorsOnMalformedPolicy(t *testing.T) {
 }
 
 func TestScanCRAFlagEmitsNote(t *testing.T) {
-	dir := writeProject(t, minimalGoMod)
+	dir := writeProject(t)
 	_, stderr, err := runCmd(t, "scan", dir, "--cra")
 	require.NoError(t, err)
 	require.Contains(t, stderr.String(), "CRA",
