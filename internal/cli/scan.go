@@ -65,6 +65,7 @@ Output formats:
 var defaultDetectors = []scanner.Detector{
 	&detectors.GoMod{},
 	&detectors.Npm{},
+	&detectors.Composer{},
 }
 
 func runScan(cmd *cobra.Command, path string, opts *scanOptions) error {
