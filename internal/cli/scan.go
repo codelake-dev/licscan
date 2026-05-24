@@ -68,6 +68,7 @@ var defaultDetectors = []scanner.Detector{
 	&detectors.Composer{},
 	&detectors.Cargo{},
 	&detectors.Gem{},
+	&detectors.Pip{},
 }
 
 func runScan(cmd *cobra.Command, path string, opts *scanOptions) error {
