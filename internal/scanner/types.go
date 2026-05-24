@@ -74,6 +74,8 @@ type Dependency struct {
 	Licenses  []License `json:"licenses"`
 	Direct    bool      `json:"direct"`                // true if listed in the top-level manifest; false for transitive
 	Notes     []string  `json:"notes,omitempty"`       // human-readable hints (e.g. "license file not found in module cache")
+	Verdict   string    `json:"verdict,omitempty"`     // populated by the policy engine: "" | "allow" | "warn" | "deny" | "exempt"
+	Reason    string    `json:"reason,omitempty"`      // policy reason — populated for "exempt" with the rationale from allow_exceptions
 }
 
 // PrimaryRisk returns the highest risk level across all attached licenses.

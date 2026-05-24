@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Phase 7 (policy engine)
+
+- **`.licscan.yml` policy file** with three sections: `deny`, `warn`, `allow_exceptions`.
+- **Default policy** (when `.licscan.yml` is absent): denies GPL / AGPL / SSPL / BSL / BUSL / Commons-Clause / Elastic-2.0; warns on LGPL / MPL / EPL / CDDL / EUPL; allows Permissive and Unknown (humans must triage Unknown).
+- **Per-dependency verdict** carried on `Dependency.Verdict` (`allow` / `warn` / `deny` / `exempt`) plus `Reason` for exempt + deny. Verdicts are serialised into JSON / SPDX / CycloneDX outputs.
+- **`--ci` mode**: exits non-zero only when at least one dep is denied. Warned / exempted deps do not break CI.
+- **Stderr violation list**: in `--ci` mode each denied dep is printed to stderr with package, version, license, and reason — so CI logs explain WHY the build failed.
+- **Table renderer**: shows a `VERDICT` column with ✓ allow / ⚠ warn / ✗ deny / ○ exempt when the policy engine has run.
+- **`allow_exceptions[]`**: whitelist specific packages by name even when their license is denied; carries a `reason` field surfaced in tooling.
+- New `gopkg.in/yaml.v3` direct dependency (was already transitive via testify).
+
 ### Added — Phase 6 (SPDX 2.3 exporter)
 
 - **SPDX 2.3 JSON SBOM** via `--format spdx` per https://spdx.github.io/spdx-spec/v2.3/.

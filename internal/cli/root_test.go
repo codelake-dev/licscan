@@ -154,6 +154,32 @@ func TestScanCIModeExitsOnViolation(t *testing.T) {
 	require.NoError(t, err, "CI mode with no violations must exit 0")
 }
 
+func TestScanLoadsPolicyFromLicscanYml(t *testing.T) {
+	dir := writeProject(t, minimalGoMod)
+	// Add a policy that denies an arbitrary license — we won't trigger
+	// any deps, but we verify it parses cleanly (a malformed .licscan.yml
+	// would surface as an error here).
+	require.NoError(t, os.WriteFile(
+		filepath.Join(dir, ".licscan.yml"),
+		[]byte("deny:\n  - GPL-3.0\nwarn:\n  - LGPL-3.0\n"),
+		0o644))
+
+	_, _, err := runCmd(t, "scan", dir)
+	require.NoError(t, err, "valid .licscan.yml must parse without error")
+}
+
+func TestScanErrorsOnMalformedPolicy(t *testing.T) {
+	dir := writeProject(t, minimalGoMod)
+	require.NoError(t, os.WriteFile(
+		filepath.Join(dir, ".licscan.yml"),
+		[]byte("deny: [unterminated\nthis isn't yaml\n@@@"),
+		0o644))
+
+	_, _, err := runCmd(t, "scan", dir)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "policy")
+}
+
 func TestScanCRAFlagEmitsNote(t *testing.T) {
 	dir := writeProject(t, minimalGoMod)
 	_, stderr, err := runCmd(t, "scan", dir, "--cra")

@@ -158,9 +158,11 @@ allow_exceptions:
 
 When `licscan scan . --ci` runs in a CI pipeline:
 
-- a finding for any `deny` license → **exit 1**
-- a finding for any `warn` license → reported, but exit 0
-- a finding for a package listed under `allow_exceptions` → suppressed
+- a finding for any `deny` license → **exit 1** (with the violating packages printed to stderr)
+- a finding for any `warn` license → reported with a `⚠ warn` verdict, exit 0
+- a finding for a package listed under `allow_exceptions` → marked `○ exempt`, exit 0
+
+If no `.licscan.yml` is present, a built-in default policy applies: denies GPL / AGPL / SSPL / BSL / Commons-Clause / Elastic-2.0; warns on LGPL / MPL / EPL / CDDL / EUPL; allows Permissive (MIT / Apache / BSD / ISC / …).
 
 ---
 

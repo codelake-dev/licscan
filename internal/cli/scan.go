@@ -10,6 +10,7 @@ import (
 	"github.com/codelake-dev/licscan/internal/scanner"
 	"github.com/codelake-dev/licscan/internal/scanner/detectors"
 	"github.com/codelake-dev/licscan/internal/scanner/format"
+	"github.com/codelake-dev/licscan/internal/scanner/policy"
 )
 
 // supportedFormats is the closed set of --format values. Kept here so the
@@ -81,15 +82,23 @@ func runScan(cmd *cobra.Command, path string, opts *scanOptions) error {
 		return fmt.Errorf("scan: %w", err)
 	}
 
+	pol, err := policy.Load(absPath)
+	if err != nil {
+		return fmt.Errorf("policy: %w", err)
+	}
+	pol.Apply(result)
+
 	if err := renderResult(cmd.OutOrStdout(), opts.format, result); err != nil {
 		return fmt.Errorf("render %s: %w", opts.format, err)
 	}
 
-	// CI mode: exit code 1 if any risk-level above WeakCopyleft is present.
-	// Policy-engine-driven exits land with the .licscan.yml feature.
-	if opts.ci && result.HasViolations() {
-		return fmt.Errorf("policy violation: %d high-risk dependency/ies found",
-			result.Summary[scanner.RiskStrongCopyleft.String()]+result.Summary[scanner.RiskViral.String()])
+	// CI mode: exit non-zero only when policy explicitly denies something.
+	// Exemptions in .licscan.yml allow teams to whitelist specific packages
+	// without weakening the global rules.
+	if opts.ci && policy.HasDenials(result) {
+		printPolicyViolations(cmd.ErrOrStderr(), result)
+		denyCount := policy.CountByVerdict(result)[policy.VerdictDeny]
+		return fmt.Errorf("policy violation: %d dependency/ies denied", denyCount)
 	}
 
 	if opts.cra {
@@ -127,4 +136,18 @@ func isValidFormat(format string) bool {
 		}
 	}
 	return false
+}
+
+// printPolicyViolations writes each denied dependency to stderr with its
+// reason, so CI logs surface a useful failure explanation alongside the
+// non-zero exit code.
+func printPolicyViolations(w io.Writer, result *scanner.Result) {
+	_, _ = fmt.Fprintln(w, "\nPolicy violations:")
+	for _, dep := range result.Dependencies {
+		if dep.Verdict != policy.VerdictDeny {
+			continue
+		}
+		_, _ = fmt.Fprintf(w, "  ❌ %s@%s  %s — %s\n",
+			dep.Name, dep.Version, dep.PrimaryLicense(), dep.Reason)
+	}
 }

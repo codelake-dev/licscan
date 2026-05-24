@@ -66,11 +66,28 @@ func writeDependencyTable(w io.Writer, deps []scanner.Dependency) error {
 		return sorted[i].Name < sorted[j].Name
 	})
 
+	// Show the Verdict column only when at least one dep carries a verdict
+	// (policy engine has run). For ad-hoc `licscan scan .` without policy
+	// the column is hidden to keep the default table compact.
+	showVerdict := false
+	for _, d := range sorted {
+		if d.Verdict != "" {
+			showVerdict = true
+			break
+		}
+	}
+
 	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
-	if _, err := fmt.Fprintln(tw, "RISK\tPACKAGE\tVERSION\tLICENSE\tDIRECT\tECOSYSTEM"); err != nil {
+	header := "RISK\tPACKAGE\tVERSION\tLICENSE\tDIRECT\tECOSYSTEM"
+	divider := "----\t-------\t-------\t-------\t------\t---------"
+	if showVerdict {
+		header += "\tVERDICT"
+		divider += "\t-------"
+	}
+	if _, err := fmt.Fprintln(tw, header); err != nil {
 		return err
 	}
-	if _, err := fmt.Fprintln(tw, "----\t-------\t-------\t-------\t------\t---------"); err != nil {
+	if _, err := fmt.Fprintln(tw, divider); err != nil {
 		return err
 	}
 	for _, d := range sorted {
@@ -79,12 +96,37 @@ func writeDependencyTable(w io.Writer, deps []scanner.Dependency) error {
 		if d.Direct {
 			direct = "yes"
 		}
-		if _, err := fmt.Fprintf(tw, "%s %s\t%s\t%s\t%s\t%s\t%s\n",
-			risk.Emoji(), risk.String(), d.Name, d.Version, d.PrimaryLicense(), direct, d.Ecosystem); err != nil {
-			return err
+		if showVerdict {
+			if _, err := fmt.Fprintf(tw, "%s %s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+				risk.Emoji(), risk.String(), d.Name, d.Version, d.PrimaryLicense(), direct, d.Ecosystem, verdictLabel(d.Verdict)); err != nil {
+				return err
+			}
+		} else {
+			if _, err := fmt.Fprintf(tw, "%s %s\t%s\t%s\t%s\t%s\t%s\n",
+				risk.Emoji(), risk.String(), d.Name, d.Version, d.PrimaryLicense(), direct, d.Ecosystem); err != nil {
+				return err
+			}
 		}
 	}
 	return tw.Flush()
+}
+
+// verdictLabel maps internal verdict strings to display labels with emojis.
+// Kept local to the table renderer to avoid hard-coding terminal-styling
+// in the policy package.
+func verdictLabel(v string) string {
+	switch v {
+	case "allow":
+		return "✓ allow"
+	case "warn":
+		return "⚠ warn"
+	case "deny":
+		return "✗ deny"
+	case "exempt":
+		return "○ exempt"
+	default:
+		return v
+	}
 }
 
 func writeSummary(w io.Writer, summary map[string]int) error {
