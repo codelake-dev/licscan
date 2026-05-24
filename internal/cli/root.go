@@ -1,0 +1,63 @@
+// Package cli wires the Cobra command tree for the licscan binary.
+package cli
+
+import (
+	"fmt"
+	"io"
+	"os"
+
+	"github.com/spf13/cobra"
+
+	"github.com/codelake-ai/licscan/internal/version"
+)
+
+// Execute runs the root command. Returns the exit code so callers (main and
+// integration tests) can react without calling os.Exit themselves.
+func Execute() int {
+	cmd := NewRootCommand()
+	cmd.SetOut(os.Stdout)
+	cmd.SetErr(os.Stderr)
+	if err := cmd.Execute(); err != nil {
+		// Cobra has already printed the error via SetErr.
+		return 1
+	}
+	return 0
+}
+
+// NewRootCommand builds a fresh command tree. Exported so tests can exercise
+// it with isolated input/output buffers instead of stdout/stderr.
+func NewRootCommand() *cobra.Command {
+	root := &cobra.Command{
+		Use:           "licscan",
+		Short:         "Open-source license & compliance scanner",
+		Long:          longDescription,
+		SilenceUsage:  true,
+		SilenceErrors: true,
+		Version:       version.Full(),
+	}
+
+	// Cobra emits "licscan version vX.Y.Z" by default; we want the full
+	// banner so users see commit + build date on --version.
+	root.SetVersionTemplate("{{.Version}}\n")
+
+	root.AddCommand(
+		newScanCommand(),
+		newAboutCommand(),
+	)
+
+	return root
+}
+
+const longDescription = `licscan scans a project for the licenses of its dependencies, classifies
+them by risk, checks compatibility, and exports SBOMs (CycloneDX / SPDX).
+
+Supports Composer, npm, pip, Go modules, Gemfile, Cargo and Maven.
+Includes an EU CRA Compliance mode for regulated software.`
+
+// writeln is a small helper so subcommands can write a line to the command
+// writer without pulling in fmt every time. Errors are propagated so tests
+// can detect broken writers.
+func writeln(w io.Writer, format string, args ...any) error {
+	_, err := fmt.Fprintf(w, format+"\n", args...)
+	return err
+}

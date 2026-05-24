@@ -1,0 +1,19 @@
+# Build artefacts
+/bin/
+/dist/
+/coverage.out
+/coverage.html
+*.out
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Goreleaser
+/dist/
