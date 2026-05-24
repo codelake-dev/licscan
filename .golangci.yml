@@ -26,14 +26,10 @@ linters:
     goconst:
       min-len: 4
       min-occurrences: 5
-    gosec:
-      # G703: Path traversal via taint analysis. Our "tainted" inputs are
-      # always manifest files the user explicitly asked us to scan (go.mod,
-      # package.json, Cargo.lock, etc.). The tool's whole purpose is to read
-      # files from a user-supplied directory, so this rule produces only
-      # false positives in our context.
-      excludes:
-        - G703
+    # gosec exclusions are configured via text-matching in
+    # linters.exclusions.rules below (G703 is a gosec rule that isn't
+    # in the official enum schema, so the gosec.excludes block can't
+    # accept it — text matching works for any rule ID).
     revive:
       rules:
         - name: exported
@@ -55,6 +51,13 @@ linters:
           - gosec
           - prealloc
         path: _test\.go
+      # gosec G304 + G703: "file inclusion via variable" / "path traversal
+      # via taint". Our whole purpose is reading files from a user-supplied
+      # scan directory — these rules fire on every os.ReadFile against a
+      # manifest path and produce only false positives in our context.
+      - linters:
+          - gosec
+        text: "G304|G703"
     paths:
       - third_party$
       - builtin$

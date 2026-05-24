@@ -38,6 +38,9 @@ cover:
 .PHONY: lint
 lint:
 	@which golangci-lint > /dev/null || (echo "golangci-lint not installed: https://golangci-lint.run/usage/install/"; exit 1)
+	# 'config verify' catches schema errors that 'run' silently ignores
+	# (e.g. unknown gosec rule IDs). Both must pass for CI to be green.
+	golangci-lint config verify
 	golangci-lint run ./...
 
 .PHONY: fmt
