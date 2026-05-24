@@ -68,8 +68,8 @@ psycopg2-binary = "^2.9"
 
 func TestPoetryLockParsesAllPackages(t *testing.T) {
 	dir := writeProject(t, map[string]string{
-		"poetry.lock":     samplePoetryLock,
-		"pyproject.toml":  samplePyprojectPoetry,
+		"poetry.lock":    samplePoetryLock,
+		"pyproject.toml": samplePyprojectPoetry,
 	})
 	det := &Pip{Resolver: stubPipResolver{}}
 	found, deps, err := det.Detect(dir)
@@ -311,12 +311,12 @@ func TestExtractLicenseFromPEP621MetadataUnknownTreatedAsAbsent(t *testing.T) {
 
 func TestMapClassifierToSPDX(t *testing.T) {
 	cases := map[string]string{
-		"Classifier: License :: OSI Approved :: MIT License":                              "MIT",
-		"Classifier: License :: OSI Approved :: Apache Software License":                  "Apache-2.0",
-		"Classifier: License :: OSI Approved :: BSD License":                              "BSD-3-Clause",
-		"Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)":    "GPL-3.0",
+		"Classifier: License :: OSI Approved :: MIT License":                                   "MIT",
+		"Classifier: License :: OSI Approved :: Apache Software License":                       "Apache-2.0",
+		"Classifier: License :: OSI Approved :: BSD License":                                   "BSD-3-Clause",
+		"Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)":         "GPL-3.0",
 		"Classifier: License :: OSI Approved :: GNU Affero General Public License v3 (AGPLv3)": "AGPL-3.0",
-		"Classifier: License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)":     "MPL-2.0",
+		"Classifier: License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)":          "MPL-2.0",
 	}
 	for input, want := range cases {
 		require.Equal(t, want, mapClassifierToSPDX(input), "for %q", input)

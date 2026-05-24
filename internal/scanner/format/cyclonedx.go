@@ -115,11 +115,11 @@ func newUUID() string {
 // ── CycloneDX 1.5 JSON schema types ────────────────────────────
 
 type cycloneDXBOM struct {
-	BOMFormat    string              `json:"bomFormat"`
-	SpecVersion  string              `json:"specVersion"`
-	SerialNumber string              `json:"serialNumber"`
-	Version      int                 `json:"version"`
-	Metadata     cycloneDXMetadata   `json:"metadata"`
+	BOMFormat    string               `json:"bomFormat"`
+	SpecVersion  string               `json:"specVersion"`
+	SerialNumber string               `json:"serialNumber"`
+	Version      int                  `json:"version"`
+	Metadata     cycloneDXMetadata    `json:"metadata"`
 	Components   []cycloneDXComponent `json:"components"`
 }
 

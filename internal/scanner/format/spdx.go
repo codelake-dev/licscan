@@ -30,7 +30,7 @@ func buildSPDXDocument(result *scanner.Result, now time.Time) spdxDocument {
 	docNamespace := "https://github.com/codelake-dev/licscan/spdxdoc/" + newUUID()
 
 	packages := make([]spdxPackage, 0, len(result.Dependencies))
-	relationships := []spdxRelationship{}
+	relationships := make([]spdxRelationship, 0, len(result.Dependencies))
 
 	for i, dep := range result.Dependencies {
 		pkgSPDXID := fmt.Sprintf("SPDXRef-Package-%d-%s", i, sanitizeSPDXID(dep.Name))
@@ -100,13 +100,13 @@ var spdxIDInvalid = regexp.MustCompile(`[^a-zA-Z0-9.\-]`)
 // ── SPDX 2.3 JSON schema types ─────────────────────────────────
 
 type spdxDocument struct {
-	SPDXVersion       string            `json:"spdxVersion"`
-	DataLicense       string            `json:"dataLicense"`
-	SPDXID            string            `json:"SPDXID"`
-	Name              string            `json:"name"`
-	DocumentNamespace string            `json:"documentNamespace"`
-	CreationInfo      spdxCreationInfo  `json:"creationInfo"`
-	Packages          []spdxPackage     `json:"packages"`
+	SPDXVersion       string             `json:"spdxVersion"`
+	DataLicense       string             `json:"dataLicense"`
+	SPDXID            string             `json:"SPDXID"`
+	Name              string             `json:"name"`
+	DocumentNamespace string             `json:"documentNamespace"`
+	CreationInfo      spdxCreationInfo   `json:"creationInfo"`
+	Packages          []spdxPackage      `json:"packages"`
 	Relationships     []spdxRelationship `json:"relationships,omitempty"`
 }
 

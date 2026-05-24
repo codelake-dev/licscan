@@ -167,7 +167,7 @@ func TestApplyDenyTrumpsWarnAcrossMultipleLicenses(t *testing.T) {
 }
 
 func TestApplyMatchingIsCaseInsensitive(t *testing.T) {
-	p := &Policy{Deny: []string{"agpl-3.0"}} // lower-case in policy
+	p := &Policy{Deny: []string{"agpl-3.0"}}      // lower-case in policy
 	r := resultWithDeps(depWith("x", "AGPL-3.0")) // upper-case on dep
 	p.Apply(r)
 	require.Equal(t, VerdictDeny, r.Dependencies[0].Verdict)

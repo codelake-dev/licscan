@@ -18,10 +18,10 @@ import (
 //
 // Python has many competing manifest formats; we try them in order of
 // information richness:
-//   1. poetry.lock      — TOML, full transitive list
-//   2. Pipfile.lock     — JSON (pipenv), full transitive list (default+develop)
-//   3. requirements.txt — flat list, direct deps only
-//   4. pyproject.toml   — PEP 621 [project.dependencies], direct deps only
+//  1. poetry.lock      — TOML, full transitive list
+//  2. Pipfile.lock     — JSON (pipenv), full transitive list (default+develop)
+//  3. requirements.txt — flat list, direct deps only
+//  4. pyproject.toml   — PEP 621 [project.dependencies], direct deps only
 //
 // Whichever is found first wins. None of these formats carry license
 // info inline, so resolution always goes through the resolver — which
@@ -38,7 +38,7 @@ type PipResolver interface {
 
 // Name implements scanner.Detector.
 func (p *Pip) Name() string {
-	return "pip"
+	return ecosystemPip
 }
 
 // Detect implements scanner.Detector.
@@ -49,14 +49,14 @@ func (p *Pip) Detect(rootPath string) (bool, []scanner.Dependency, error) {
 	}
 
 	// Try lockfiles first — they have full transitive coverage.
-	if raw, err := os.ReadFile(filepath.Join(rootPath, "poetry.lock")); err == nil {
+	if raw, err := os.ReadFile(filepath.Join(rootPath, manifestPoetryLock)); err == nil {
 		deps, perr := parsePoetryLock(raw, rootPath, resolver)
 		if perr != nil {
 			return true, nil, fmt.Errorf("parse poetry.lock: %w", perr)
 		}
 		return true, deps, nil
 	}
-	if raw, err := os.ReadFile(filepath.Join(rootPath, "Pipfile.lock")); err == nil {
+	if raw, err := os.ReadFile(filepath.Join(rootPath, manifestPipfileLock)); err == nil {
 		deps, perr := parsePipfileLock(raw, resolver)
 		if perr != nil {
 			return true, nil, fmt.Errorf("parse Pipfile.lock: %w", perr)
@@ -68,13 +68,13 @@ func (p *Pip) Detect(rootPath string) (bool, []scanner.Dependency, error) {
 	directs := map[string]string{}
 	foundAny := false
 
-	if raw, err := os.ReadFile(filepath.Join(rootPath, "requirements.txt")); err == nil {
+	if raw, err := os.ReadFile(filepath.Join(rootPath, manifestRequirements)); err == nil {
 		foundAny = true
 		for name, version := range parseRequirementsTxt(raw) {
 			directs[name] = version
 		}
 	}
-	if raw, err := os.ReadFile(filepath.Join(rootPath, "pyproject.toml")); err == nil {
+	if raw, err := os.ReadFile(filepath.Join(rootPath, manifestPyproject)); err == nil {
 		foundAny = true
 		for name, version := range parsePyprojectTOML(raw) {
 			if _, exists := directs[name]; !exists {
@@ -89,7 +89,7 @@ func (p *Pip) Detect(rootPath string) (bool, []scanner.Dependency, error) {
 
 	deps := make([]scanner.Dependency, 0, len(directs))
 	for name, version := range directs {
-		dep := newPipDependency(name, version, true, "requirements.txt", resolver)
+		dep := newPipDependency(name, version, true, manifestRequirements, resolver)
 		dep.Notes = append(dep.Notes,
 			"no lockfile present — transitive dependencies were not analysed")
 		deps = append(deps, dep)
@@ -121,7 +121,7 @@ func parsePoetryLock(raw []byte, rootPath string, resolver PipResolver) ([]scann
 	// it we'd flag everything as transitive.
 	directSet := map[string]bool{}
 	if rootPath != "" {
-		if data, err := os.ReadFile(filepath.Join(rootPath, "pyproject.toml")); err == nil {
+		if data, err := os.ReadFile(filepath.Join(rootPath, manifestPyproject)); err == nil {
 			for name := range parsePyprojectTOML(data) {
 				directSet[normalisePyName(name)] = true
 			}
@@ -131,7 +131,7 @@ func parsePoetryLock(raw []byte, rootPath string, resolver PipResolver) ([]scann
 	deps := make([]scanner.Dependency, 0, len(lock.Packages))
 	for _, pkg := range lock.Packages {
 		dep := newPipDependency(pkg.Name, pkg.Version, directSet[normalisePyName(pkg.Name)],
-			"poetry.lock", resolver)
+			manifestPoetryLock, resolver)
 		deps = append(deps, dep)
 	}
 	return deps, nil
@@ -157,11 +157,11 @@ func parsePipfileLock(raw []byte, resolver PipResolver) ([]scanner.Dependency, e
 	deps := make([]scanner.Dependency, 0, len(lock.Default)+len(lock.Develop))
 	for name, entry := range lock.Default {
 		deps = append(deps, newPipDependency(name, strings.TrimPrefix(entry.Version, "=="),
-			true, "Pipfile.lock", resolver))
+			true, manifestPipfileLock, resolver))
 	}
 	for name, entry := range lock.Develop {
 		deps = append(deps, newPipDependency(name, strings.TrimPrefix(entry.Version, "=="),
-			true, "Pipfile.lock", resolver))
+			true, manifestPipfileLock, resolver))
 	}
 	return deps, nil
 }
@@ -255,7 +255,7 @@ func newPipDependency(name, version string, direct bool, manifest string, resolv
 	dep := scanner.Dependency{
 		Name:      name,
 		Version:   version,
-		Ecosystem: "pip",
+		Ecosystem: ecosystemPip,
 		Manifest:  manifest,
 		Direct:    direct,
 	}
@@ -418,9 +418,9 @@ func mapClassifierToSPDX(line string) string {
 	case strings.Contains(line, "MIT License"):
 		return "MIT"
 	case strings.Contains(line, "Apache Software License"):
-		return "Apache-2.0"
+		return spdxApache20
 	case strings.Contains(line, "BSD License"):
-		return "BSD-3-Clause"
+		return spdxBSD3Clause
 	case strings.Contains(line, "ISC License (ISCL)"):
 		return "ISC"
 	case strings.Contains(line, "GNU General Public License v3 (GPLv3)"):
@@ -432,9 +432,9 @@ func mapClassifierToSPDX(line string) string {
 	case strings.Contains(line, "GNU Lesser General Public License v2 (LGPLv2)"):
 		return "LGPL-2.1"
 	case strings.Contains(line, "GNU Affero General Public License v3 (AGPLv3)"):
-		return "AGPL-3.0"
+		return spdxAGPL30
 	case strings.Contains(line, "Mozilla Public License 2.0 (MPL 2.0)"):
-		return "MPL-2.0"
+		return spdxMPL20
 	case strings.Contains(line, "Python Software Foundation License"):
 		return "Python-2.0"
 	}

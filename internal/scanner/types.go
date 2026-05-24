@@ -59,23 +59,23 @@ func (r RiskLevel) Emoji() string {
 // License represents one license attached to a dependency. A dependency
 // may carry multiple licenses (OR / AND combinations are allowed by SPDX).
 type License struct {
-	SPDX  string    `json:"spdx"`            // SPDX identifier (e.g. "MIT") or "Unknown"
-	Risk  RiskLevel `json:"-"`               // computed from SPDX
-	Risk_ string    `json:"risk"`            // serialized risk label for JSON
-	Source string   `json:"source,omitempty"` // where the license was detected (file path, inferred, etc.)
+	SPDX   string    `json:"spdx"`             // SPDX identifier (e.g. "MIT") or "Unknown"
+	Risk   RiskLevel `json:"-"`                // computed from SPDX
+	Risk_  string    `json:"risk"`             // serialized risk label for JSON
+	Source string    `json:"source,omitempty"` // where the license was detected (file path, inferred, etc.)
 }
 
 // Dependency is one third-party package found in a manifest.
 type Dependency struct {
 	Name      string    `json:"name"`
 	Version   string    `json:"version"`
-	Ecosystem string    `json:"ecosystem"`             // gomod, npm, composer, pip, gem, cargo, maven
-	Manifest  string    `json:"manifest"`              // path to the manifest file relative to scan root
+	Ecosystem string    `json:"ecosystem"` // gomod, npm, composer, pip, gem, cargo, maven
+	Manifest  string    `json:"manifest"`  // path to the manifest file relative to scan root
 	Licenses  []License `json:"licenses"`
-	Direct    bool      `json:"direct"`                // true if listed in the top-level manifest; false for transitive
-	Notes     []string  `json:"notes,omitempty"`       // human-readable hints (e.g. "license file not found in module cache")
-	Verdict   string    `json:"verdict,omitempty"`     // populated by the policy engine: "" | "allow" | "warn" | "deny" | "exempt"
-	Reason    string    `json:"reason,omitempty"`      // policy reason — populated for "exempt" with the rationale from allow_exceptions
+	Direct    bool      `json:"direct"`            // true if listed in the top-level manifest; false for transitive
+	Notes     []string  `json:"notes,omitempty"`   // human-readable hints (e.g. "license file not found in module cache")
+	Verdict   string    `json:"verdict,omitempty"` // populated by the policy engine: "" | "allow" | "warn" | "deny" | "exempt"
+	Reason    string    `json:"reason,omitempty"`  // policy reason — populated for "exempt" with the rationale from allow_exceptions
 }
 
 // PrimaryRisk returns the highest risk level across all attached licenses.
@@ -108,11 +108,11 @@ func (d Dependency) PrimaryLicense() string {
 // Result is a scan's aggregated output: every dependency found by every
 // detector, plus a summary breakdown by risk level.
 type Result struct {
-	ScanPath     string                 `json:"scan_path"`
-	Dependencies []Dependency           `json:"dependencies"`
-	Summary      map[string]int         `json:"summary"`             // risk-label → count
-	Detectors    []string               `json:"detectors_run"`       // which detectors fired (gomod, npm, etc.)
-	Errors       []string               `json:"errors,omitempty"`    // non-fatal errors per detector
+	ScanPath     string         `json:"scan_path"`
+	Dependencies []Dependency   `json:"dependencies"`
+	Summary      map[string]int `json:"summary"`          // risk-label → count
+	Detectors    []string       `json:"detectors_run"`    // which detectors fired (gomod, npm, etc.)
+	Errors       []string       `json:"errors,omitempty"` // non-fatal errors per detector
 }
 
 // NewResult builds an empty Result with an initialised summary map.

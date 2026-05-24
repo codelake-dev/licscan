@@ -27,12 +27,12 @@ type ComposerResolver interface {
 
 // Name implements scanner.Detector.
 func (c *Composer) Name() string {
-	return "composer"
+	return ecosystemComposer
 }
 
 // Detect implements scanner.Detector.
 func (c *Composer) Detect(rootPath string) (bool, []scanner.Dependency, error) {
-	composerJSONPath := filepath.Join(rootPath, "composer.json")
+	composerJSONPath := filepath.Join(rootPath, manifestComposerJSON)
 	rawJSON, err := os.ReadFile(composerJSONPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -54,7 +54,7 @@ func (c *Composer) Detect(rootPath string) (bool, []scanner.Dependency, error) {
 	directNames := manifest.directNames()
 
 	// Prefer composer.lock for complete (direct + transitive) coverage.
-	lockPath := filepath.Join(rootPath, "composer.lock")
+	lockPath := filepath.Join(rootPath, manifestComposerLock)
 	if rawLock, lockErr := os.ReadFile(lockPath); lockErr == nil {
 		var lock composerLock
 		if err := json.Unmarshal(rawLock, &lock); err != nil {
@@ -133,13 +133,13 @@ func composerDepsFromLock(lock composerLock, directNames map[string]bool, resolv
 		dep := scanner.Dependency{
 			Name:      pkg.Name,
 			Version:   pkg.Version,
-			Ecosystem: "composer",
-			Manifest:  "composer.lock",
+			Ecosystem: ecosystemComposer,
+			Manifest:  manifestComposerLock,
 			Direct:    directNames[pkg.Name],
 		}
 
 		spdx := firstNonEmpty(pkg.License)
-		source := "composer.lock"
+		source := manifestComposerLock
 		if spdx == "" && resolver != nil {
 			spdx, source = resolver.Resolve(pkg.Name, pkg.Version)
 		}
@@ -171,8 +171,8 @@ func newComposerDependency(name, version string, direct bool, resolver ComposerR
 	dep := scanner.Dependency{
 		Name:      name,
 		Version:   version,
-		Ecosystem: "composer",
-		Manifest:  "composer.json",
+		Ecosystem: ecosystemComposer,
+		Manifest:  manifestComposerJSON,
 		Direct:    direct,
 	}
 	spdx := ""
@@ -209,7 +209,7 @@ func (r *VendorResolver) Resolve(name, _ string) (string, string) {
 		return "", ""
 	}
 	pkgDir := filepath.Join(r.VendorDir, name)
-	pkgJSON := filepath.Join(pkgDir, "composer.json")
+	pkgJSON := filepath.Join(pkgDir, manifestComposerJSON)
 
 	if data, err := os.ReadFile(pkgJSON); err == nil {
 		// composer.json `license` is a string-or-array union. Accept both.

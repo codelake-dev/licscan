@@ -30,12 +30,12 @@ type NpmResolver interface {
 
 // Name implements scanner.Detector.
 func (n *Npm) Name() string {
-	return "npm"
+	return ecosystemNpm
 }
 
 // Detect implements scanner.Detector.
 func (n *Npm) Detect(rootPath string) (bool, []scanner.Dependency, error) {
-	pkgPath := filepath.Join(rootPath, "package.json")
+	pkgPath := filepath.Join(rootPath, manifestPackageJSON)
 	pkgRaw, err := os.ReadFile(pkgPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -57,7 +57,7 @@ func (n *Npm) Detect(rootPath string) (bool, []scanner.Dependency, error) {
 	directNames := pkg.directDependencyNames()
 
 	// Prefer package-lock.json for complete (direct + transitive) coverage.
-	lockPath := filepath.Join(rootPath, "package-lock.json")
+	lockPath := filepath.Join(rootPath, manifestPackageLock)
 	if lockRaw, lockErr := os.ReadFile(lockPath); lockErr == nil {
 		deps, parseErr := parseLockfile(lockRaw, directNames, resolver)
 		if parseErr != nil {
@@ -120,9 +120,9 @@ func (p packageJSON) allDependencies() map[string]string {
 // ── package-lock.json parsing ──────────────────────────────────
 
 type lockfile struct {
-	LockfileVersion int                       `json:"lockfileVersion"`
-	Packages        map[string]lockfilePackage `json:"packages,omitempty"`        // v2/v3
-	Dependencies    map[string]lockfileDepV1   `json:"dependencies,omitempty"`    // v1 + v2 compat
+	LockfileVersion int                        `json:"lockfileVersion"`
+	Packages        map[string]lockfilePackage `json:"packages,omitempty"`     // v2/v3
+	Dependencies    map[string]lockfileDepV1   `json:"dependencies,omitempty"` // v1 + v2 compat
 }
 
 type lockfilePackage struct {
@@ -133,8 +133,8 @@ type lockfilePackage struct {
 }
 
 type lockfileDepV1 struct {
-	Version      string                  `json:"version"`
-	Dev          bool                    `json:"dev,omitempty"`
+	Version      string                   `json:"version"`
+	Dev          bool                     `json:"dev,omitempty"`
 	Dependencies map[string]lockfileDepV1 `json:"dependencies,omitempty"` // nested
 }
 
@@ -172,8 +172,8 @@ func parsePackagesMap(packages map[string]lockfilePackage, directNames map[strin
 		dep := scanner.Dependency{
 			Name:      name,
 			Version:   pkg.Version,
-			Ecosystem: "npm",
-			Manifest:  "package-lock.json",
+			Ecosystem: ecosystemNpm,
+			Manifest:  manifestPackageLock,
 			Direct:    directNames[name],
 		}
 
@@ -182,7 +182,7 @@ func parsePackagesMap(packages map[string]lockfilePackage, directNames map[strin
 		if spdx == "" {
 			spdx = extractLicenseFromRawMessage(pkg.Licenses)
 		}
-		source := "package-lock.json"
+		source := manifestPackageLock
 
 		if spdx == "" && resolver != nil {
 			spdx, source = resolver.Resolve(name, pkg.Version)
@@ -293,8 +293,8 @@ func newNpmDependency(name, version string, direct bool, resolver NpmResolver) s
 	dep := scanner.Dependency{
 		Name:      name,
 		Version:   version,
-		Ecosystem: "npm",
-		Manifest:  "package.json",
+		Ecosystem: ecosystemNpm,
+		Manifest:  manifestPackageJSON,
 		Direct:    direct,
 	}
 	spdx := ""
@@ -326,7 +326,7 @@ func (r *NodeModulesResolver) Resolve(name, _ string) (string, string) {
 		return "", ""
 	}
 	pkgDir := filepath.Join(r.NodeModulesDir, name)
-	pkgJSON := filepath.Join(pkgDir, "package.json")
+	pkgJSON := filepath.Join(pkgDir, manifestPackageJSON)
 
 	if data, err := os.ReadFile(pkgJSON); err == nil {
 		var p packageJSON

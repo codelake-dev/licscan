@@ -28,12 +28,12 @@ type CargoResolver interface {
 
 // Name implements scanner.Detector.
 func (c *Cargo) Name() string {
-	return "cargo"
+	return ecosystemCargo
 }
 
 // Detect implements scanner.Detector.
 func (c *Cargo) Detect(rootPath string) (bool, []scanner.Dependency, error) {
-	cargoTOMLPath := filepath.Join(rootPath, "Cargo.toml")
+	cargoTOMLPath := filepath.Join(rootPath, manifestCargoTOML)
 	rawTOML, err := os.ReadFile(cargoTOMLPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -55,7 +55,7 @@ func (c *Cargo) Detect(rootPath string) (bool, []scanner.Dependency, error) {
 	directNames := manifest.directDependencyNames()
 
 	// Prefer Cargo.lock for full transitive coverage.
-	lockPath := filepath.Join(rootPath, "Cargo.lock")
+	lockPath := filepath.Join(rootPath, manifestCargoLock)
 	if rawLock, lockErr := os.ReadFile(lockPath); lockErr == nil {
 		var lock cargoLock
 		if err := toml.Unmarshal(rawLock, &lock); err != nil {
@@ -125,8 +125,8 @@ func cargoDepsFromLock(lock cargoLock, directNames map[string]bool, resolver Car
 		dep := scanner.Dependency{
 			Name:      pkg.Name,
 			Version:   pkg.Version,
-			Ecosystem: "cargo",
-			Manifest:  "Cargo.lock",
+			Ecosystem: ecosystemCargo,
+			Manifest:  manifestCargoLock,
 			Direct:    directNames[pkg.Name],
 		}
 
@@ -154,8 +154,8 @@ func newCargoDependency(name, version string, direct bool, resolver CargoResolve
 	dep := scanner.Dependency{
 		Name:      name,
 		Version:   version,
-		Ecosystem: "cargo",
-		Manifest:  "Cargo.toml",
+		Ecosystem: ecosystemCargo,
+		Manifest:  manifestCargoTOML,
 		Direct:    direct,
 	}
 	spdx := ""
@@ -217,7 +217,7 @@ func (r *CargoCacheResolver) Resolve(name, version string) (string, string) {
 	}
 
 	crateDir := filepath.Join(indexDir, name+"-"+version)
-	cratePath := filepath.Join(crateDir, "Cargo.toml")
+	cratePath := filepath.Join(crateDir, manifestCargoTOML)
 
 	if data, err := os.ReadFile(cratePath); err == nil {
 		var ct cratePackageTable

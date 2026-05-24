@@ -99,12 +99,12 @@ var matchers = []licenseMatcher{
 		must: []string{"gnu lesser general public license", "version 2.1"},
 	},
 	{
-		spdx: "GPL-3.0",
+		spdx:    "GPL-3.0",
 		must:    []string{"gnu general public license", "version 3"},
 		mustNot: []string{"lesser", "affero"},
 	},
 	{
-		spdx: "GPL-2.0",
+		spdx:    "GPL-2.0",
 		must:    []string{"gnu general public license", "version 2"},
 		mustNot: []string{"lesser", "affero"},
 	},
@@ -177,8 +177,8 @@ var matchers = []licenseMatcher{
 		},
 	},
 	{
-		spdx: "BSD-2-Clause",
-		must: []string{"redistribution and use in source and binary forms"},
+		spdx:    "BSD-2-Clause",
+		must:    []string{"redistribution and use in source and binary forms"},
 		mustNot: []string{"neither the name of"},
 	},
 

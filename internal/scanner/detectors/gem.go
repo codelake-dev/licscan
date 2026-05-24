@@ -33,12 +33,12 @@ type GemResolver interface {
 
 // Name implements scanner.Detector.
 func (g *Gem) Name() string {
-	return "gem"
+	return ecosystemGem
 }
 
 // Detect implements scanner.Detector.
 func (g *Gem) Detect(rootPath string) (bool, []scanner.Dependency, error) {
-	lockPath := filepath.Join(rootPath, "Gemfile.lock")
+	lockPath := filepath.Join(rootPath, manifestGemfileLock)
 	rawLock, err := os.ReadFile(lockPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -67,8 +67,8 @@ func (g *Gem) Detect(rootPath string) (bool, []scanner.Dependency, error) {
 		dep := scanner.Dependency{
 			Name:      spec.Name,
 			Version:   spec.Version,
-			Ecosystem: "gem",
-			Manifest:  "Gemfile.lock",
+			Ecosystem: ecosystemGem,
+			Manifest:  manifestGemfileLock,
 			Direct:    directSet[spec.Name],
 		}
 
@@ -94,7 +94,7 @@ type GemSpec struct {
 }
 
 var (
-	specEntryRegex = regexp.MustCompile(`^    ([A-Za-z0-9._-]+) \(([^)]+)\)$`)
+	specEntryRegex       = regexp.MustCompile(`^    ([A-Za-z0-9._-]+) \(([^)]+)\)$`)
 	dependencyEntryRegex = regexp.MustCompile(`^  ([A-Za-z0-9._-]+)`)
 )
 

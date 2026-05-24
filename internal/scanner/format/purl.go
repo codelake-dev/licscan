@@ -37,16 +37,29 @@ func BuildPURL(dep scanner.Dependency) string {
 	return purl
 }
 
+// Ecosystem identifiers — kept local to the format package so it stays
+// independent of the detectors package. Same string values as the
+// detectors-package constants.
+const (
+	ecoGoMod    = "gomod"
+	ecoNpm      = "npm"
+	ecoComposer = "composer"
+	ecoPip      = "pip"
+	ecoGem      = "gem"
+	ecoCargo    = "cargo"
+	ecoMaven    = "maven"
+)
+
 // ecosystemToPURLType maps our internal ecosystem identifiers to the
 // PURL `type` component as defined in the spec.
 var ecosystemToPURLType = map[string]string{
-	"gomod":    "golang",
-	"npm":      "npm",
-	"composer": "composer",
-	"pip":      "pypi",
-	"gem":      "gem",
-	"cargo":    "cargo",
-	"maven":    "maven",
+	ecoGoMod:    "golang",
+	ecoNpm:      "npm",
+	ecoComposer: "composer",
+	ecoPip:      "pypi",
+	ecoGem:      "gem",
+	ecoCargo:    "cargo",
+	ecoMaven:    "maven",
 }
 
 // splitNamespace separates a package identifier into (namespace, name)
@@ -55,11 +68,11 @@ var ecosystemToPURLType = map[string]string{
 //   - composer: "vendor/pkg" → "vendor", "pkg"
 //   - maven:    "groupId:artifactId" → "groupId", "artifactId"
 //   - golang:   no namespace split — full module path stays as name
-//               (per PURL golang spec)
+//     (per PURL golang spec)
 //   - others:   no namespace
 func splitNamespace(ecosystem, pkgName string) (namespace, name string) {
 	switch ecosystem {
-	case "npm":
+	case ecoNpm:
 		// Scoped: "@scope/pkg" → namespace="@scope", name="pkg".
 		if strings.HasPrefix(pkgName, "@") {
 			if idx := strings.Index(pkgName, "/"); idx > 0 {
@@ -67,12 +80,12 @@ func splitNamespace(ecosystem, pkgName string) (namespace, name string) {
 			}
 		}
 		return "", pkgName
-	case "composer":
+	case ecoComposer:
 		if idx := strings.Index(pkgName, "/"); idx > 0 {
 			return pkgName[:idx], pkgName[idx+1:]
 		}
 		return "", pkgName
-	case "maven":
+	case ecoMaven:
 		if idx := strings.Index(pkgName, ":"); idx > 0 {
 			return pkgName[:idx], pkgName[idx+1:]
 		}

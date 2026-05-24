@@ -34,7 +34,7 @@ type LicenseResolver interface {
 
 // Name implements scanner.Detector.
 func (g *GoMod) Name() string {
-	return "gomod"
+	return ecosystemGoMod
 }
 
 // Detect implements scanner.Detector.
@@ -64,7 +64,7 @@ func (g *GoMod) Detect(rootPath string) (bool, []scanner.Dependency, error) {
 		dep := scanner.Dependency{
 			Name:      req.Mod.Path,
 			Version:   req.Mod.Version,
-			Ecosystem: "gomod",
+			Ecosystem: ecosystemGoMod,
 			Manifest:  "go.mod",
 			Direct:    !req.Indirect,
 		}

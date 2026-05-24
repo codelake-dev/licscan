@@ -54,10 +54,10 @@ func TestGoModName(t *testing.T) {
 func TestGoModDetectsAllDependencies(t *testing.T) {
 	root := writeTempGoMod(t, sampleGoMod)
 	det := &GoMod{Resolver: stubResolver{results: map[string]struct{ spdx, source string }{
-		"github.com/spf13/cobra":        {"Apache-2.0", "stub"},
-		"github.com/stretchr/testify":   {"MIT", "stub"},
-		"github.com/davecgh/go-spew":    {"ISC", "stub"},
-		"github.com/spf13/pflag":        {"BSD-3-Clause", "stub"},
+		"github.com/spf13/cobra":      {"Apache-2.0", "stub"},
+		"github.com/stretchr/testify": {"MIT", "stub"},
+		"github.com/davecgh/go-spew":  {"ISC", "stub"},
+		"github.com/spf13/pflag":      {"BSD-3-Clause", "stub"},
 	}}}
 
 	found, deps, err := det.Detect(root)
