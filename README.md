@@ -207,7 +207,7 @@ licscan scan . --format cyclonedx > sbom.cdx.json   # CycloneDX 1.5
 licscan scan . --format spdx      > sbom.spdx.json  # SPDX 2.3
 ```
 
-Both formats are accepted by the major vulnerability scanners (Trivy, Grype, Snyk) and dependency-tracking platforms (Dependency-Track, FOSSA, DependencyHub).
+Both formats include canonical PURLs (`pkg:golang/...`, `pkg:npm/...`, etc.) and are accepted by the major vulnerability scanners (Trivy, Grype, Snyk) and dependency-tracking platforms (Dependency-Track, FOSSA, DependencyHub). The CycloneDX BOM serial number is a stable RFC 4122 v4 UUID; the SPDX document namespace is a unique URI per scan.
 
 ---
 

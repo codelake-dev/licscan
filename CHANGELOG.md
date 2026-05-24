@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Phase 6 (SPDX 2.3 exporter)
+
+- **SPDX 2.3 JSON SBOM** via `--format spdx` per https://spdx.github.io/spdx-spec/v2.3/.
+- Includes `SPDXRef-DOCUMENT` + `creationInfo` (with `Tool: licscan-<version>`) + `packages[]` + `relationships[]` (`DESCRIBES`).
+- `NOASSERTION` for unknown licenses + `downloadLocation`.
+- PURL embedded as `externalRefs[].referenceLocator` (category `PACKAGE-MANAGER`, type `purl`).
+- SPDXID sanitisation enforces the spec regex `^SPDXRef-[a-zA-Z0-9.\-]+$` so package names with `/`, `@`, etc. produce valid IDs.
+- Verified end-to-end against a 337-dep Astro project — 7431-line valid SPDX 2.3 JSON.
+
+### Added — Phase 5 (CycloneDX 1.5 exporter + PURL)
+
+- **CycloneDX 1.5 JSON SBOM** via `--format cyclonedx` per https://cyclonedx.org/docs/1.5/json/. Accepted by Trivy, Grype, Snyk, Dependency-Track.
+- Includes `bomFormat`, `specVersion`, `serialNumber` as `urn:uuid:<RFC4122-v4>` (crypto/rand, no external uuid dep), `metadata.tools[]` declaring licscan, `metadata.component` for the scan target, and `components[]` with `bom-ref`, `purl`, `licenses`, and `scope` (`required`/`optional` for direct/transitive).
+- `NOASSERTION` license expression for unknown licenses (per CycloneDX convention).
+- **PURL (Package URL) generator** per https://github.com/package-url/purl-spec — supports `pkg:golang`, `pkg:npm` (incl. scoped `@scope/pkg`), `pkg:composer`, `pkg:pypi`, `pkg:gem`, `pkg:cargo`, `pkg:maven`. Re-used by both CycloneDX and SPDX exporters.
+
 ### Added — Phase 4 (HTML formatter)
 
 - **Dark-theme HTML report**: single self-contained HTML5 file, no external CSS/JS, can be archived as CI artifact and opened anywhere.
