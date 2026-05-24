@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or Discussion
+    url: https://github.com/codelake-dev/licscan/discussions
+    about: For usage questions, ideas, show-and-tell, or anything that isn't a confirmed bug or feature request.
+  - name: Security vulnerability (private)
+    url: https://github.com/codelake-dev/licscan/security/advisories/new
+    about: Report a security issue privately. Do NOT use the public issue tracker for vulnerabilities.

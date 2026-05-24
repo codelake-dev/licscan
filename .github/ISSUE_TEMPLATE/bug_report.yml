@@ -1,0 +1,97 @@
+name: Bug report
+description: Something in licscan is broken or producing wrong output
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. The more concrete the reproduction, the faster we can fix it.
+
+        **Please do NOT report security vulnerabilities here** — use the [private vulnerability reporting form](https://github.com/codelake-dev/licscan/security/advisories/new) or email `security@codelake.dev`.
+
+  - type: input
+    id: version
+    attributes:
+      label: licscan version
+      description: Output of `licscan --version`
+      placeholder: "v0.11.0 (commit abcd123, built 2026-05-24T...)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Linux (x86_64)
+        - Linux (arm64)
+        - Windows
+        - Other (please specify in description)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ecosystem
+    attributes:
+      label: Affected package manager
+      description: Which detector exposes the bug?
+      options:
+        - go.mod
+        - npm
+        - composer
+        - cargo
+        - gem
+        - pip
+        - maven
+        - Multiple / cross-detector
+        - Not detector-specific (CLI / output format / policy / CRA)
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What went wrong?
+      description: A clear and concise description of the bug.
+      placeholder: "When I run `licscan scan .` against a Go project I get..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: |
+        Minimal steps to reproduce. A link to a public repo is ideal; otherwise paste the relevant manifest fragment.
+      placeholder: |
+        1. `git clone https://github.com/example/repro-case`
+        2. `cd repro-case`
+        3. `licscan scan .`
+        4. Observe ...
+      render: bash
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected output
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual output
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Additional context / logs
+      description: Anything else? Workflow file, `.licscan.yml` content, weird env vars...
+      render: text
