@@ -55,7 +55,7 @@ It is built for engineering teams who want license compliance to be a determinis
 ### One-liner (macOS / Linux)
 
 ```bash
-curl -fsSL https://install.licscan.dev/install.sh | sh
+curl -fsSL https://install.codelake.dev/licscan/install.sh | sh
 ```
 
 Installs the latest stable release into `/usr/local/bin/licscan`. Override with:
@@ -201,7 +201,7 @@ If you'd rather wire the CLI manually:
 ```yaml
 - name: License compliance
   run: |
-    curl -fsSL https://install.licscan.dev/install.sh | sh
+    curl -fsSL https://install.codelake.dev/licscan/install.sh | sh
     licscan scan . --ci --format markdown
 ```
 

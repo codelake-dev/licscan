@@ -2,12 +2,12 @@
 set -e
 
 # LicScan — Install Script
-# Usage: curl -fsSL https://install.licscan.dev/install.sh | sh
+# Usage: curl -fsSL https://install.codelake.dev/licscan/install.sh | sh
 #
 # Copyright 2026 codelake Technologies LLC, an Akyros Labs brand
 # https://github.com/codelake-dev/licscan
 
-BASE_URL="${LICSCAN_BASE_URL:-https://install.licscan.dev}"
+BASE_URL="${LICSCAN_BASE_URL:-https://install.codelake.dev}"
 INSTALL_DIR="${LICSCAN_INSTALL_DIR:-/usr/local/bin}"
 BINARY_NAME="licscan"
 VERSION="${LICSCAN_VERSION:-latest}"

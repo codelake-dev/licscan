@@ -97,7 +97,7 @@ jobs:
 
             **One-liner (macOS / Linux):**
             ```bash
-            curl -fsSL https://install.licscan.dev/install.sh | sh
+            curl -fsSL https://install.codelake.dev/licscan/install.sh | sh
             ```
 
             **Homebrew:**
@@ -180,13 +180,13 @@ jobs:
           EOF
 
       - name: Inject R2_PUBLIC_URL into install.sh
-        # install.sh ships with a sensible default (install.licscan.dev) for
+        # install.sh ships with a sensible default (install.codelake.dev) for
         # local testing; rewrite to the deployed CDN URL before upload so
         # the script downloaded from R2 always hits R2.
         run: |
           PUBLIC="${{ secrets.R2_PUBLIC_URL }}"
           PUBLIC="${PUBLIC%/}"
-          sed -i "s|https://install.licscan.dev|${PUBLIC}|g" install.sh
+          sed -i "s|https://install.codelake.dev|${PUBLIC}|g" install.sh
 
       - name: Upload to R2
         env:
