@@ -17,6 +17,13 @@ updates:
     labels:
       - dependencies
       - go
+    ignore:
+      # golang.org/x/mod ≥ 0.22 declares `go 1.25.0` in its own go.mod,
+      # which breaks our CI (matrix is Go 1.22/1.23, golangci-lint
+      # binary is built with Go 1.24). Lift this pin once the CI moves
+      # to Go 1.25+. See commit beaf117 + closed PR #6 for context.
+      - dependency-name: "golang.org/x/mod"
+        versions: [">=0.22.0"]
 
   # Pin GitHub Actions used by our own workflows — supply-chain hygiene.
   - package-ecosystem: github-actions
