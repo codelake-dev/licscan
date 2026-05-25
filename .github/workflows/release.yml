@@ -218,6 +218,13 @@ jobs:
             --content-type "text/x-shellscript" \
             --cache-control "public, max-age=60"
 
+  deploy-website:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger licscan.dev rebuild
+        run: curl -s -X POST "${{ secrets.CF_DEPLOY_HOOK_URL }}"
+
   update-homebrew:
     needs: release
     runs-on: ubuntu-latest
