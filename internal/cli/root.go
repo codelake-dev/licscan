@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/codelake-dev/licscan/internal/banner"
 	"github.com/codelake-dev/licscan/internal/version"
 )
 
@@ -28,15 +29,13 @@ func NewRootCommand() *cobra.Command {
 	root := &cobra.Command{
 		Use:           "licscan",
 		Short:         "Open-source license & compliance scanner",
-		Long:          longDescription,
+		Long:          banner.Logo + "\n  " + banner.Attribution + "\n\n" + longDescription,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Version:       version.Full(),
 	}
 
-	// Cobra emits "licscan version vX.Y.Z" by default; we want the full
-	// banner so users see commit + build date on --version.
-	root.SetVersionTemplate("{{.Version}}\n")
+	root.SetVersionTemplate(banner.Logo + "\n  " + banner.Attribution + "\n\n" + "{{.Version}}\n")
 
 	root.AddCommand(
 		newScanCommand(),

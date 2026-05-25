@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLogoIsSixLines(t *testing.T) {
-	lines := strings.Split(strings.TrimRight(Logo, "\n"), "\n")
-	require.Len(t, lines, 6, "logo must remain exactly 6 lines tall (LicScan rendering)")
+func TestLogoIsNineLines(t *testing.T) {
+	lines := strings.Split(strings.Trim(Logo, "\n"), "\n")
+	require.Len(t, lines, 8, "logo must remain exactly 8 lines tall")
 }
 
 func TestAttributionContainsBothLegalEntities(t *testing.T) {
@@ -23,7 +23,7 @@ func TestRenderEmitsLogoAttributionAndTagline(t *testing.T) {
 	require.NoError(t, Render(&buf))
 
 	out := buf.String()
-	require.Contains(t, out, "_      _       _____", "logo must be rendered")
+	require.Contains(t, out, "████", "logo must be rendered")
 	require.Contains(t, out, Attribution, "attribution must be rendered")
 	require.Contains(t, out, Tagline, "tagline must be rendered")
 }

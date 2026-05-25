@@ -11,12 +11,15 @@ import (
 
 // Logo is the LicScan ASCII logo. Kept as a const so it never drifts
 // between subcommands.
-const Logo = `  _      _       _____
- | |    (_)     / ____|
- | |     _  ___| (___   ___ __ _ _ __
- | |    | |/ __|\___ \ / __/ _` + "`" + ` | '_ \
- | |____| | (__ ____) | (_| (_| | | | |
- |______|_|\___|_____/ \___\__,_|_| |_|`
+const Logo = `
+ ████   ███
+ ░░███  ░░░
+  ░███  ████   ██████   █████   ██████   ██████   ████████
+  ░███ ░░███  ███░░███ ███░░   ███░░███ ░░░░░███ ░░███░░███
+  ░███  ░███ ░███ ░░░ ░░█████ ░███ ░░░   ███████  ░███ ░███
+  ░███  ░███ ░███  ███ ░░░░███░███  ███ ███░░███  ░███ ░███
+  █████ █████░░██████  ██████ ░░██████ ░░████████ ████ █████
+ ░░░░░ ░░░░░  ░░░░░░  ░░░░░░   ░░░░░░   ░░░░░░░░ ░░░░ ░░░░░`
 
 // Tagline is the one-line product description shown under the logo.
 const Tagline = "Open-source license & compliance scanner for modern codebases."
@@ -28,6 +31,12 @@ const Attribution = "by codelake Technologies LLC. An Akyros Labs brand."
 // Render writes the logo + attribution + version to the given writer.
 // Used by `licscan about` and on first-run / --help output.
 func Render(w io.Writer) error {
-	_, err := fmt.Fprintf(w, "%s\n\n%s %s\n%s\n", Logo, Attribution, version.Short(), Tagline)
+	_, err := fmt.Fprintf(w, "%s\n  %s\n\n  %s\n  %s\n", Logo, Attribution, Tagline, version.Short())
+	return err
+}
+
+// Short writes a compact one-line banner for --help and --version.
+func Short(w io.Writer) error {
+	_, err := fmt.Fprintf(w, "%s\n  %s · %s\n\n", Logo, Attribution, version.Short())
 	return err
 }
