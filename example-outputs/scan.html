@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LicScan Report — /tmp/licscan-cra-test</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface-2: #21262d;
+  --border: #30363d;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #58a6ff;
+  --permissive: #3fb950;
+  --weak: #d29922;
+  --strong: #f85149;
+  --viral: #a371f7;
+  --unknown: #6e7681;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+header { border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 32px; }
+header .top { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+header .top-text { flex: 1 1 auto; min-width: 0; }
+header .top-logo { flex: 0 0 auto; }
+header .top-logo img { height: 50px; width: auto; display: block; }
+header h1 { margin: 0 0 4px; font-size: 28px; font-weight: 600; }
+header .tagline { color: var(--muted); font-size: 14px; }
+header .meta { margin-top: 16px; color: var(--muted); font-size: 13px; }
+header .meta strong { color: var(--text); font-weight: 500; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 32px; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+.card .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+.card .count { font-size: 28px; font-weight: 600; }
+.card.viral .count { color: var(--viral); }
+.card.strong .count { color: var(--strong); }
+.card.weak .count { color: var(--weak); }
+.card.permissive .count { color: var(--permissive); }
+.card.unknown .count { color: var(--unknown); }
+
+table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+thead { background: var(--surface-2); }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+th { font-weight: 500; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+tbody tr:hover { background: var(--surface-2); }
+tbody tr:last-child td { border-bottom: 0; }
+td.pkg { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+td.version { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); }
+td.license { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+td.scope { color: var(--muted); font-size: 12px; }
+
+.badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+.badge.permissive { background: rgba(63, 185, 80, 0.15); color: var(--permissive); }
+.badge.weak { background: rgba(210, 153, 34, 0.15); color: var(--weak); }
+.badge.strong { background: rgba(248, 81, 73, 0.15); color: var(--strong); }
+.badge.viral { background: rgba(163, 113, 247, 0.15); color: var(--viral); }
+.badge.unknown { background: rgba(110, 118, 129, 0.15); color: var(--unknown); }
+
+.empty { padding: 48px; text-align: center; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+
+footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; text-align: center; }
+footer a { color: var(--accent); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+.errors { margin-bottom: 32px; padding: 16px 20px; background: rgba(248, 81, 73, 0.08); border: 1px solid rgba(248, 81, 73, 0.3); border-radius: 8px; color: var(--text); }
+.errors h3 { margin: 0 0 8px; color: var(--strong); font-size: 14px; }
+.errors ul { margin: 0; padding-left: 20px; }
+.errors li { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="top">
+      <div class="top-text">
+        <h1>LicScan Report</h1>
+        <div class="tagline">Open-source license &amp; compliance scan</div>
+      </div>
+      <div class="top-logo">
+        <img src="https://cdn.codelake.dev/logo/codelake_logo_w.png" alt="codelake">
+      </div>
+    </div>
+    <div class="meta">
+      <div><strong>Scan path:</strong> /tmp/licscan-cra-test</div>
+      <div><strong>Detectors:</strong>
+        gomod
+      </div>
+      <div><strong>Total dependencies:</strong> 10</div>
+      <div><strong>Generated:</strong> 2026-05-25T09:28:13Z</div>
+    </div>
+  </header>
+
+  <section class="cards">
+    
+    <div class="card viral">
+      <div class="label">❌ Viral / Problematic</div>
+      <div class="count">0</div>
+    </div>
+    
+    <div class="card strong">
+      <div class="label">🔴 Strong Copyleft</div>
+      <div class="count">0</div>
+    </div>
+    
+    <div class="card weak">
+      <div class="label">⚠️ Weak Copyleft</div>
+      <div class="count">0</div>
+    </div>
+    
+    <div class="card permissive">
+      <div class="label">✅ Permissive</div>
+      <div class="count">10</div>
+    </div>
+    
+    <div class="card unknown">
+      <div class="label">❓ Unknown</div>
+      <div class="count">0</div>
+    </div>
+    
+  </section>
+
+  
+
+  
+  <table>
+    <thead>
+      <tr>
+        <th>Risk</th>
+        <th>Package</th>
+        <th>Version</th>
+        <th>License</th>
+        <th>Scope</th>
+        <th>Ecosystem</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr>
+        <td><span class="badge permissive">Permissive</span></td>
+        <td class="pkg">github.com/BurntSushi/toml</td>
+        <td class="version">v1.6.0</td>
+        <td class="license">MIT</td>
+        <td class="scope">direct</td>
+        <td class="scope">gomod</td>
+      </tr>
+      
+      <tr>
+        <td><span class="badge permissive">Permissive</span></td>
+        <td class="pkg">github.com/davecgh/go-spew</td>
+        <td class="version">v1.1.1</td>
+        <td class="license">ISC</td>
+        <td class="scope">transitive</td>
+        <td class="scope">gomod</td>
+      </tr>
+      
+      <tr>
+        <td><span class="badge permissive">Permissive</span></td>
+        <td class="pkg">github.com/go-pdf/fpdf</td>
+        <td class="version">v0.9.0</td>
+        <td class="license">MIT</td>
+        <td class="scope">direct</td>
+        <td class="scope">gomod</td>
+      </tr>
+      
+      <tr>
+        <td><span class="badge permissive">Permissive</span></td>
+        <td class="pkg">github.com/inconshreveable/mousetrap</td>
+        <td class="version">v1.1.0</td>
+        <td class="license">Apache-2.0</td>
+        <td class="scope">transitive</td>
+        <td class="scope">gomod</td>
+      </tr>
+      
+      <tr>
+        <td><span class="badge permissive">Permissive</span></td>
+        <td class="pkg">github.com/pmezard/go-difflib</td>
+        <td class="version">v1.0.0</td>
+        <td class="license">BSD-2-Clause</td>
+        <td class="scope">transitive</td>
+        <td class="scope">gomod</td>
+      </tr>
+      
+      <tr>
+        <td><span class="badge permissive">Permissive</span></td>
+        <td class="pkg">github.com/spf13/cobra</td>
+        <td class="version">v1.10.2</td>
+        <td class="license">Apache-2.0</td>
+        <td class="scope">direct</td>
+        <td class="scope">gomod</td>
+      </tr>
+      
+      <tr>
+        <td><span class="badge permissive">Permissive</span></td>
+        <td class="pkg">github.com/spf13/pflag</td>
+        <td class="version">v1.0.9</td>
+        <td class="license">BSD-3-Clause</td>
+        <td class="scope">transitive</td>
+        <td class="scope">gomod</td>
+      </tr>
+      
+      <tr>
+        <td><span class="badge permissive">Permissive</span></td>
+        <td class="pkg">github.com/stretchr/testify</td>
+        <td class="version">v1.11.1</td>
+        <td class="license">MIT</td>
+        <td class="scope">direct</td>
+        <td class="scope">gomod</td>
+      </tr>
+      
+      <tr>
+        <td><span class="badge permissive">Permissive</span></td>
+        <td class="pkg">golang.org/x/mod</td>
+        <td class="version">v0.21.0</td>
+        <td class="license">BSD-3-Clause</td>
+        <td class="scope">direct</td>
+        <td class="scope">gomod</td>
+      </tr>
+      
+      <tr>
+        <td><span class="badge permissive">Permissive</span></td>
+        <td class="pkg">gopkg.in/yaml.v3</td>
+        <td class="version">v3.0.1</td>
+        <td class="license">MIT</td>
+        <td class="scope">direct</td>
+        <td class="scope">gomod</td>
+      </tr>
+      
+    </tbody>
+  </table>
+  
+
+  <footer>
+    LicScan · by codelake Technologies LLC · An Akyros Labs brand ·
+    <a href="https://github.com/codelake-dev/licscan">github.com/codelake-dev/licscan</a>
+  </footer>
+</div>
+</body>
+</html>

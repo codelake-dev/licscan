@@ -1,0 +1,165 @@
+{
+  "scan_path": "/tmp/licscan-cra-test",
+  "dependencies": [
+    {
+      "name": "github.com/BurntSushi/toml",
+      "version": "v1.6.0",
+      "ecosystem": "gomod",
+      "manifest": "go.mod",
+      "licenses": [
+        {
+          "spdx": "MIT",
+          "risk": "Permissive",
+          "source": "/Users/example/go/pkg/mod/github.com/!burnt!sushi/toml@v1.6.0/COPYING"
+        }
+      ],
+      "direct": true,
+      "verdict": "allow"
+    },
+    {
+      "name": "github.com/go-pdf/fpdf",
+      "version": "v0.9.0",
+      "ecosystem": "gomod",
+      "manifest": "go.mod",
+      "licenses": [
+        {
+          "spdx": "MIT",
+          "risk": "Permissive",
+          "source": "/Users/example/go/pkg/mod/github.com/go-pdf/fpdf@v0.9.0/LICENSE"
+        }
+      ],
+      "direct": true,
+      "verdict": "allow"
+    },
+    {
+      "name": "github.com/spf13/cobra",
+      "version": "v1.10.2",
+      "ecosystem": "gomod",
+      "manifest": "go.mod",
+      "licenses": [
+        {
+          "spdx": "Apache-2.0",
+          "risk": "Permissive",
+          "source": "/Users/example/go/pkg/mod/github.com/spf13/cobra@v1.10.2/LICENSE.txt"
+        }
+      ],
+      "direct": true,
+      "verdict": "allow"
+    },
+    {
+      "name": "github.com/stretchr/testify",
+      "version": "v1.11.1",
+      "ecosystem": "gomod",
+      "manifest": "go.mod",
+      "licenses": [
+        {
+          "spdx": "MIT",
+          "risk": "Permissive",
+          "source": "/Users/example/go/pkg/mod/github.com/stretchr/testify@v1.11.1/LICENSE"
+        }
+      ],
+      "direct": true,
+      "verdict": "allow"
+    },
+    {
+      "name": "golang.org/x/mod",
+      "version": "v0.21.0",
+      "ecosystem": "gomod",
+      "manifest": "go.mod",
+      "licenses": [
+        {
+          "spdx": "BSD-3-Clause",
+          "risk": "Permissive",
+          "source": "/Users/example/go/pkg/mod/golang.org/x/mod@v0.21.0/LICENSE"
+        }
+      ],
+      "direct": true,
+      "verdict": "allow"
+    },
+    {
+      "name": "gopkg.in/yaml.v3",
+      "version": "v3.0.1",
+      "ecosystem": "gomod",
+      "manifest": "go.mod",
+      "licenses": [
+        {
+          "spdx": "MIT",
+          "risk": "Permissive",
+          "source": "/Users/example/go/pkg/mod/gopkg.in/yaml.v3@v3.0.1/LICENSE"
+        }
+      ],
+      "direct": true,
+      "verdict": "allow"
+    },
+    {
+      "name": "github.com/davecgh/go-spew",
+      "version": "v1.1.1",
+      "ecosystem": "gomod",
+      "manifest": "go.mod",
+      "licenses": [
+        {
+          "spdx": "ISC",
+          "risk": "Permissive",
+          "source": "/Users/example/go/pkg/mod/github.com/davecgh/go-spew@v1.1.1/LICENSE"
+        }
+      ],
+      "direct": false,
+      "verdict": "allow"
+    },
+    {
+      "name": "github.com/inconshreveable/mousetrap",
+      "version": "v1.1.0",
+      "ecosystem": "gomod",
+      "manifest": "go.mod",
+      "licenses": [
+        {
+          "spdx": "Apache-2.0",
+          "risk": "Permissive",
+          "source": "/Users/example/go/pkg/mod/github.com/inconshreveable/mousetrap@v1.1.0/LICENSE"
+        }
+      ],
+      "direct": false,
+      "verdict": "allow"
+    },
+    {
+      "name": "github.com/pmezard/go-difflib",
+      "version": "v1.0.0",
+      "ecosystem": "gomod",
+      "manifest": "go.mod",
+      "licenses": [
+        {
+          "spdx": "BSD-2-Clause",
+          "risk": "Permissive",
+          "source": "/Users/example/go/pkg/mod/github.com/pmezard/go-difflib@v1.0.0/LICENSE"
+        }
+      ],
+      "direct": false,
+      "verdict": "allow"
+    },
+    {
+      "name": "github.com/spf13/pflag",
+      "version": "v1.0.9",
+      "ecosystem": "gomod",
+      "manifest": "go.mod",
+      "licenses": [
+        {
+          "spdx": "BSD-3-Clause",
+          "risk": "Permissive",
+          "source": "/Users/example/go/pkg/mod/github.com/spf13/pflag@v1.0.9/LICENSE"
+        }
+      ],
+      "direct": false,
+      "verdict": "allow"
+    }
+  ],
+  "summary": {
+    "Permissive": 10,
+    "Strong Copyleft": 0,
+    "Unknown": 0,
+    "Viral / Problematic": 0,
+    "Weak Copyleft": 0
+  },
+  "detectors_run": [
+    "gomod"
+  ]
+}
