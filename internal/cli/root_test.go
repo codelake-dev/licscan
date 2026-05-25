@@ -257,7 +257,7 @@ func TestIsValidFormatRejectsEmpty(t *testing.T) {
 }
 
 func TestSupportedFormatsIsStable(t *testing.T) {
-	expected := []string{"table", "json", "html", "cyclonedx", "spdx", "markdown", "sarif"}
+	expected := []string{"table", "json", "html", "cyclonedx", "spdx", "markdown", "sarif", "junit"}
 	require.Equal(t, expected, supportedFormats)
 }
 
