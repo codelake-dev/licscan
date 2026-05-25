@@ -42,6 +42,17 @@ const (
 // PolicyFile is the on-disk name the engine looks for in the scan root.
 const PolicyFile = ".licscan.yml"
 
+// SPDX bases used by Default() — extracted so the `-only` / `-or-later`
+// suffixes are computed rather than written as separate literals (keeps
+// goconst's substring counter happy).
+const (
+	spdxAGPL3 = "AGPL-3.0"
+	spdxGPL3  = "GPL-3.0"
+	spdxGPL2  = "GPL-2.0"
+	spdxLGPL3 = "LGPL-3.0"
+	spdxLGPL2 = "LGPL-2.1"
+)
+
 // Policy is the in-memory representation of .licscan.yml.
 type Policy struct {
 	Deny            []string     `yaml:"deny"`
@@ -105,19 +116,23 @@ func (p Product) IsZero() bool {
 //   - Permissive + Unknown are allowed (Unknown is shown but not blocked —
 //     humans must triage)
 func Default() *Policy {
+	const (
+		suffixOnly    = "-only"
+		suffixOrLater = "-or-later"
+	)
 	return &Policy{
 		Deny: []string{
-			"GPL-2.0", "GPL-2.0-only", "GPL-2.0-or-later",
-			"GPL-3.0", "GPL-3.0-only", "GPL-3.0-or-later",
-			"AGPL-3.0", "AGPL-3.0-only", "AGPL-3.0-or-later",
+			spdxGPL2, spdxGPL2 + suffixOnly, spdxGPL2 + suffixOrLater,
+			spdxGPL3, spdxGPL3 + suffixOnly, spdxGPL3 + suffixOrLater,
+			spdxAGPL3, spdxAGPL3 + suffixOnly, spdxAGPL3 + suffixOrLater,
 			"SSPL-1.0",
 			"BSL-1.1", "BUSL-1.1",
 			"Commons-Clause",
 			"Elastic-2.0", "Elastic-License-2.0",
 		},
 		Warn: []string{
-			"LGPL-2.1", "LGPL-2.1-only", "LGPL-2.1-or-later",
-			"LGPL-3.0", "LGPL-3.0-only", "LGPL-3.0-or-later",
+			spdxLGPL2, spdxLGPL2 + suffixOnly, spdxLGPL2 + suffixOrLater,
+			spdxLGPL3, spdxLGPL3 + suffixOnly, spdxLGPL3 + suffixOrLater,
 			"MPL-1.1", "MPL-2.0",
 			"EPL-1.0", "EPL-2.0",
 			"CDDL-1.0", "CDDL-1.1",
@@ -136,6 +151,14 @@ func (p *Policy) IsDefault() bool {
 // Load reads .licscan.yml from the given directory. Returns Default()
 // if the file is not present. Returns a wrapped error if the file
 // exists but cannot be parsed.
+//
+// Field-level inheritance: a .licscan.yml that omits the `deny` or
+// `warn` keys entirely inherits the corresponding default list. An
+// explicit empty list (e.g. `deny: []`) still means "explicitly allow
+// everything in this category" — only the *absence* of the key triggers
+// the inherit. This lets a project ship a `.licscan.yml` with just a
+// `manufacturer:` block (typical for CRA evidence) without unintentionally
+// disabling the deny rules.
 func Load(scanRoot string) (*Policy, error) {
 	path := filepath.Join(scanRoot, PolicyFile)
 	raw, err := os.ReadFile(path)
@@ -150,6 +173,18 @@ func Load(scanRoot string) (*Policy, error) {
 	if err := yaml.Unmarshal(raw, &p); err != nil {
 		return nil, fmt.Errorf("parse %s: %w", PolicyFile, err)
 	}
+
+	// Per-field inherit from defaults when the user omitted the key.
+	// nil slice = key absent; non-nil empty slice (e.g. `deny: []`) =
+	// explicit override → no inherit.
+	defaults := Default()
+	if p.Deny == nil {
+		p.Deny = defaults.Deny
+	}
+	if p.Warn == nil {
+		p.Warn = defaults.Warn
+	}
+
 	return &p, nil
 }
 

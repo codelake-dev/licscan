@@ -221,8 +221,8 @@ var mavenLicensePatterns = []mavenLicensePattern{
 	{spdx: spdxLGPL21, nameAll: []string{"lgpl"}},
 
 	// AGPL must precede GPL (substring) — same trick as the SPDX matcher
-	{spdx: "AGPL-3.0", nameAll: []string{"gnu affero"}},
-	{spdx: "AGPL-3.0", nameAll: []string{"agpl"}},
+	{spdx: spdxAGPL30, nameAll: []string{"gnu affero"}},
+	{spdx: spdxAGPL30, nameAll: []string{"agpl"}},
 
 	// GPL — full phrasing first, then short forms
 	{spdx: spdxGPL30, nameAll: []string{"gnu general public license", "3"}},
