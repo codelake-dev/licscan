@@ -97,6 +97,9 @@ func runScan(cmd *cobra.Command, path string, opts *scanOptions) error {
 	}
 	pol.Apply(result)
 
+	projectLicense := policy.DetectProjectLicense(absPath, pol)
+	policy.CheckCompatibility(result, projectLicense)
+
 	if err := renderResult(cmd.OutOrStdout(), opts.format, result); err != nil {
 		return fmt.Errorf("render %s: %w", opts.format, err)
 	}
@@ -106,8 +109,9 @@ func runScan(cmd *cobra.Command, path string, opts *scanOptions) error {
 	// without weakening the global rules.
 	if opts.ci && policy.HasDenials(result) {
 		printPolicyViolations(cmd.ErrOrStderr(), result)
-		denyCount := policy.CountByVerdict(result)[policy.VerdictDeny]
-		return fmt.Errorf("policy violation: %d dependency/ies denied", denyCount)
+		counts := policy.CountByVerdict(result)
+		total := counts[policy.VerdictDeny] + counts[policy.VerdictIncompat]
+		return fmt.Errorf("policy violation: %d dependency/ies denied or incompatible", total)
 	}
 
 	if opts.cra {
@@ -205,10 +209,14 @@ func isValidFormat(format string) bool {
 func printPolicyViolations(w io.Writer, result *scanner.Result) {
 	_, _ = fmt.Fprintln(w, "\nPolicy violations:")
 	for _, dep := range result.Dependencies {
-		if dep.Verdict != policy.VerdictDeny {
+		if dep.Verdict != policy.VerdictDeny && dep.Verdict != policy.VerdictIncompat {
 			continue
 		}
-		_, _ = fmt.Fprintf(w, "  ❌ %s@%s  %s — %s\n",
-			dep.Name, dep.Version, dep.PrimaryLicense(), dep.Reason)
+		icon := "❌"
+		if dep.Verdict == policy.VerdictIncompat {
+			icon = "⚡"
+		}
+		_, _ = fmt.Fprintf(w, "  %s %s@%s  %s — %s\n",
+			icon, dep.Name, dep.Version, dep.PrimaryLicense(), dep.Reason)
 	}
 }

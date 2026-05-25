@@ -30,7 +30,7 @@ func buildSARIF(result *scanner.Result) sarifLog {
 	results := []sarifResult{}
 
 	for _, dep := range result.Dependencies {
-		if dep.Verdict != policy.VerdictWarn && dep.Verdict != policy.VerdictDeny {
+		if dep.Verdict != policy.VerdictWarn && dep.Verdict != policy.VerdictDeny && dep.Verdict != "incompatible" {
 			continue
 		}
 

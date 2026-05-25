@@ -58,6 +58,7 @@ type Policy struct {
 	Deny            []string     `yaml:"deny"`
 	Warn            []string     `yaml:"warn"`
 	AllowExceptions []Exception  `yaml:"allow_exceptions"`
+	ProjectLicense  string       `yaml:"project_license"`
 	Manufacturer    Manufacturer `yaml:"manufacturer"`
 	Product         Product      `yaml:"product"`
 
@@ -239,10 +240,10 @@ func classify(licenses []scanner.License, denySet, warnSet map[string]bool) (str
 	}
 }
 
-// CountByVerdict returns counts of {deny, warn, allow, exempt} across the result.
+// CountByVerdict returns counts of {deny, warn, allow, exempt, incompatible} across the result.
 func CountByVerdict(result *scanner.Result) map[string]int {
 	counts := map[string]int{
-		VerdictDeny: 0, VerdictWarn: 0, VerdictAllow: 0, VerdictExempt: 0,
+		VerdictDeny: 0, VerdictWarn: 0, VerdictAllow: 0, VerdictExempt: 0, VerdictIncompat: 0,
 	}
 	if result == nil {
 		return counts
@@ -255,10 +256,11 @@ func CountByVerdict(result *scanner.Result) map[string]int {
 	return counts
 }
 
-// HasDenials reports whether any dependency was denied — used by CI mode
-// to decide whether to exit non-zero.
+// HasDenials reports whether any dependency was denied or flagged as
+// incompatible — used by CI mode to decide whether to exit non-zero.
 func HasDenials(result *scanner.Result) bool {
-	return CountByVerdict(result)[VerdictDeny] > 0
+	counts := CountByVerdict(result)
+	return counts[VerdictDeny] > 0 || counts[VerdictIncompat] > 0
 }
 
 func buildExceptionIndex(exs []Exception) map[string]string {
