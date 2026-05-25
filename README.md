@@ -97,6 +97,9 @@ Windows users: download `licscan-windows-amd64.exe` from the release page and ad
 ## Quickstart
 
 ```bash
+# Set up policy + CI workflow interactively
+licscan init
+
 # Scan the current directory
 licscan scan .
 
@@ -107,12 +110,20 @@ licscan scan ~/code/my-project
 licscan scan . --format json
 licscan scan . --format html > report.html
 licscan scan . --format cyclonedx > sbom.json
+licscan scan . --format sarif > results.sarif
+licscan scan . --format junit > report.xml
 
 # Run in CI — exit 1 on policy violation
 licscan scan . --ci
 
 # Generate an EU CRA-compliant SBOM
 licscan scan . --cra
+
+# Generate a THIRD_PARTY_LICENSES file
+licscan notice . --output THIRD_PARTY_LICENSES
+
+# Self-update to latest version
+licscan update
 ```
 
 ---
