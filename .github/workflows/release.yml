@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-go@v5
         with:
@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/download-artifact@v4
         with:
@@ -137,7 +137,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/download-artifact@v4
         with:
@@ -238,7 +238,7 @@ jobs:
           echo "linux_amd64=$(sha256sum licscan-linux-amd64 | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
       - name: Checkout homebrew-tap
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: codelake-dev/homebrew-tap
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
