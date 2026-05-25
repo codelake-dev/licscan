@@ -50,7 +50,7 @@ linters:
           - goconst
           - gosec
           - prealloc
-        path: _test\.go
+        path: '_test\.go$'
       # gosec G304 + G703: "file inclusion via variable" / "path traversal
       # via taint". Our whole purpose is reading files from a user-supplied
       # scan directory — these rules fire on every os.ReadFile against a
