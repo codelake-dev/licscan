@@ -1,0 +1,222 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:35385b58-5259-46cf-8450-d22e62ec5feb",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-05-25T09:28:13Z",
+    "tools": [
+      {
+        "vendor": "codelake Technologies LLC",
+        "name": "licscan",
+        "version": "v0.11.0-8-g195f52e"
+      }
+    ],
+    "manufacturer": {
+      "name": "codelake Technologies LLC",
+      "url": [
+        "https://codelake.dev"
+      ],
+      "contact": [
+        {
+          "email": "hello@codelake.dev"
+        }
+      ]
+    },
+    "supplier": {
+      "name": "codelake Technologies LLC",
+      "url": [
+        "https://github.com/codelake-dev/licscan"
+      ]
+    },
+    "component": {
+      "type": "application",
+      "bom-ref": "licscan-scan-target",
+      "name": "licscan",
+      "version": "0.11.0"
+    },
+    "lifecycles": [
+      {
+        "phase": "operations"
+      }
+    ],
+    "properties": [
+      {
+        "name": "eu-cra:article",
+        "value": "13"
+      },
+      {
+        "name": "eu-cra:annex",
+        "value": "I §1(2)(s)"
+      },
+      {
+        "name": "eu-cra:regulation",
+        "value": "Regulation (EU) 2024/2847"
+      },
+      {
+        "name": "eu-cra:manufacturer-country",
+        "value": "US"
+      },
+      {
+        "name": "eu-cra:product-category",
+        "value": "important"
+      },
+      {
+        "name": "eu-cra:support-lifecycle-end",
+        "value": "2031-05-25"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/BurntSushi/toml@v1.6.0",
+      "name": "github.com/BurntSushi/toml",
+      "version": "v1.6.0",
+      "purl": "pkg:golang/github.com/BurntSushi/toml@v1.6.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/go-pdf/fpdf@v0.9.0",
+      "name": "github.com/go-pdf/fpdf",
+      "version": "v0.9.0",
+      "purl": "pkg:golang/github.com/go-pdf/fpdf@v0.9.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/spf13/cobra@v1.10.2",
+      "name": "github.com/spf13/cobra",
+      "version": "v1.10.2",
+      "purl": "pkg:golang/github.com/spf13/cobra@v1.10.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/stretchr/testify@v1.11.1",
+      "name": "github.com/stretchr/testify",
+      "version": "v1.11.1",
+      "purl": "pkg:golang/github.com/stretchr/testify@v1.11.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:golang/golang.org/x/mod@v0.21.0",
+      "name": "golang.org/x/mod",
+      "version": "v0.21.0",
+      "purl": "pkg:golang/golang.org/x/mod@v0.21.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:golang/gopkg.in/yaml.v3@v3.0.1",
+      "name": "gopkg.in/yaml.v3",
+      "version": "v3.0.1",
+      "purl": "pkg:golang/gopkg.in/yaml.v3@v3.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/davecgh/go-spew@v1.1.1",
+      "name": "github.com/davecgh/go-spew",
+      "version": "v1.1.1",
+      "purl": "pkg:golang/github.com/davecgh/go-spew@v1.1.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ],
+      "scope": "optional"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/inconshreveable/mousetrap@v1.1.0",
+      "name": "github.com/inconshreveable/mousetrap",
+      "version": "v1.1.0",
+      "purl": "pkg:golang/github.com/inconshreveable/mousetrap@v1.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "scope": "optional"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/pmezard/go-difflib@v1.0.0",
+      "name": "github.com/pmezard/go-difflib",
+      "version": "v1.0.0",
+      "purl": "pkg:golang/github.com/pmezard/go-difflib@v1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause"
+          }
+        }
+      ],
+      "scope": "optional"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:golang/github.com/spf13/pflag@v1.0.9",
+      "name": "github.com/spf13/pflag",
+      "version": "v1.0.9",
+      "purl": "pkg:golang/github.com/spf13/pflag@v1.0.9",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "scope": "optional"
+    }
+  ]
+}
