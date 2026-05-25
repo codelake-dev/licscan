@@ -5,6 +5,16 @@ All notable changes to `licscan` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.13.0] — 2026-05-25
+
+### Added
+
+- **`--format junit`** — JUnit XML output for Jenkins, GitLab CI, Azure DevOps and any CI system that ingests xUnit-style reports. Each dependency is a testcase; warn/deny/incompatible verdicts are test failures.
+- **`licscan notice`** — new subcommand that generates a THIRD_PARTY_LICENSES / NOTICE file listing every dependency with its license, sorted by ecosystem and package name. Supports `--output` for file output and `--project-name` (auto-detected from `.licscan.yml` if set).
+- **License compatibility check** — auto-detects the project's own license from the LICENSE file or `project_license` in `.licscan.yml`, then checks every dependency against a compatibility matrix (10 project licenses × known incompatibilities). Incompatible deps get verdict `incompatible` (treated as deny-level in CI mode). Exempt deps are never overridden.
+- **`.licscan.yml` `project_license`** field — explicitly set your project's license for the compatibility check (e.g. `project_license: MIT`). If omitted, licscan auto-detects from LICENSE/LICENCE files.
+- **ASCII art banner** — new licscan logo displayed on `--help`, `--version` and `about`.
+
 ## [v0.12.0] — 2026-05-25
 
 ### Added
