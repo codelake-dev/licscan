@@ -60,7 +60,7 @@ jobs:
             -o "licscan-${{ matrix.suffix }}${{ matrix.ext }}" ./cmd/licscan
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: licscan-${{ matrix.suffix }}
           path: licscan-${{ matrix.suffix }}${{ matrix.ext }}
