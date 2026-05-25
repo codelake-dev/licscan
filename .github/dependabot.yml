@@ -40,3 +40,11 @@ updates:
     labels:
       - dependencies
       - github-actions
+    ignore:
+      # actions/download-artifact ≥ v5 ships breaking changes
+      # (ESM module, hash-mismatch errors default-on, direct-download
+      # zip-handling rework). Want to validate one major at a time
+      # rather than the 4-major jump v4→v8 Dependabot opened in #2.
+      # Lift this pin when there's time to test v5 → v6 → v7 → v8 incrementally.
+      - dependency-name: "actions/download-artifact"
+        update-types: ["version-update:semver-major"]
