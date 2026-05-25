@@ -40,6 +40,7 @@ func NewRootCommand() *cobra.Command {
 	root.AddCommand(
 		newScanCommand(),
 		newNoticeCommand(),
+		newInitCommand(),
 		newAboutCommand(),
 	)
 
