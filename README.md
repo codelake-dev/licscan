@@ -125,9 +125,35 @@ Scan a directory tree for dependency licenses.
 
 | Flag | Default | Description |
 |---|---|---|
-| `--format`, `-f` | `table` | Output format: `table`, `json`, `html`, `cyclonedx`, `spdx`, `markdown`, `sarif` |
-| `--ci` | `false` | CI mode — non-zero exit code on policy violation |
+| `--format`, `-f` | `table` | Output format: `table`, `json`, `html`, `cyclonedx`, `spdx`, `markdown`, `sarif`, `junit` |
+| `--ci` | `false` | CI mode — non-zero exit code on policy violation or license incompatibility |
 | `--cra` | `false` | Emit EU CRA-compliant SBOM (PDF + JSON) |
+| `--output` | `./licscan-cra-evidence` | Output directory for `--cra` artefacts |
+
+### `licscan init [path]`
+
+Interactive setup wizard. Generates:
+- **`.licscan.yml`** — license policy (deny/warn lists, project license, CRA manufacturer/product metadata)
+- **`.github/workflows/licscan.yml`** — CI workflow (fail-on-violation, PR comments, SARIF upload, CRA evidence)
+
+Existing files are never overwritten without confirmation.
+
+### `licscan notice [path]`
+
+Generate a `THIRD_PARTY_LICENSES` / `NOTICE` file listing every dependency with its license, sorted by ecosystem then package name. Many open-source licenses require you to ship attribution notices alongside your binary.
+
+| Flag | Default | Description |
+|---|---|---|
+| `--output`, `-o` | stdout | Output file path |
+| `--project-name` | auto-detected | Project name for the header |
+
+### `licscan update`
+
+Self-updater. Checks GitHub for the latest release and replaces the current binary in-place from the CDN.
+
+| Flag | Default | Description |
+|---|---|---|
+| `--check` | `false` | Only check for updates, don't install |
 
 ### `licscan about`
 
@@ -143,7 +169,8 @@ Print the help text for any command. Works on subcommands too:
 
 ```bash
 licscan scan --help
-licscan about --help
+licscan init --help
+licscan notice --help
 ```
 
 ---
@@ -153,6 +180,8 @@ licscan about --help
 Drop a `.licscan.yml` into your project root to define what `--ci` should reject or warn about:
 
 ```yaml
+project_license: MIT
+
 deny:
   - AGPL-3.0
   - SSPL-1.0
@@ -166,6 +195,10 @@ allow_exceptions:
   - package: some-gpl-lib
     reason: "only used in tests, never bundled"
 ```
+
+### License compatibility check
+
+When `project_license` is set (or auto-detected from your `LICENSE` file), licscan checks every dependency against a compatibility matrix. A GPL dependency in an MIT project is flagged as `incompatible` and treated as a deny-level violation in CI mode. Exempt deps are never overridden.
 
 When `licscan scan . --ci` runs in a CI pipeline:
 
@@ -267,10 +300,29 @@ Upload to [GitHub Code Scanning](https://docs.github.com/en/code-security/code-s
 
 ```yaml
 - uses: codelake-dev/licscan-action@v1
+- run: licscan scan . --format sarif > results.sarif
 - uses: github/codeql-action/upload-sarif@v3
   with:
-    sarif_file: licscan.sarif.json
+    sarif_file: results.sarif
 ```
+
+### JUnit XML (Jenkins / GitLab CI / Azure DevOps)
+
+```bash
+licscan scan . --format junit > licscan-report.xml
+```
+
+Each dependency is a testcase. Warn/deny/incompatible verdicts are test failures. Compatible with any CI system that ingests xUnit-style reports.
+
+---
+
+## NOTICE file generation
+
+```bash
+licscan notice . --output THIRD_PARTY_LICENSES
+```
+
+Generates a THIRD_PARTY_LICENSES file listing every dependency with its license. Many open-source licenses (Apache-2.0, BSD, MIT) require you to include attribution notices when redistributing.
 
 ---
 
@@ -356,14 +408,18 @@ go install ./cmd/licscan
 
 ```
 licscan/
-├── cmd/licscan/        # CLI entry point (main package)
+├── cmd/licscan/            # CLI entry point (main package)
 ├── internal/
-│   ├── cli/            # Cobra command tree
-│   ├── version/        # Build-time metadata (ldflags-injected)
-│   └── banner/         # ASCII logo + attribution
-├── .github/workflows/  # CI + release pipelines
-├── .goreleaser.yml     # Cross-platform release config
-└── .golangci.yml       # Lint config
+│   ├── cli/                # Cobra command tree (scan, init, notice, update, about)
+│   ├── scanner/            # Core scan engine
+│   │   ├── detectors/      # Package-manager detectors (gomod, npm, composer, …)
+│   │   ├── format/         # Output formatters (table, json, html, sarif, junit, …)
+│   │   └── policy/         # Policy engine + license compatibility matrix
+│   ├── version/            # Build-time metadata (ldflags-injected)
+│   └── banner/             # ASCII logo + attribution
+├── example-outputs/        # Sample output for every format
+├── .github/workflows/      # CI + release pipelines
+└── .golangci.yml           # Lint config
 ```
 
 ---

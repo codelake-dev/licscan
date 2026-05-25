@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="licscan" tests="10" failures="0" errors="0" time="0" timestamp="2026-05-25T15:59:57Z">
+    <properties>
+      <property name="licscan.version" value="dev"></property>
+      <property name="scan.path" value="/Users/example/projects/acme-api"></property>
+    </properties>
+    <testcase name="github.com/BurntSushi/toml@v1.6.0" classname="licscan.gomod" time="0"></testcase>
+    <testcase name="github.com/go-pdf/fpdf@v0.9.0" classname="licscan.gomod" time="0"></testcase>
+    <testcase name="github.com/spf13/cobra@v1.10.2" classname="licscan.gomod" time="0"></testcase>
+    <testcase name="github.com/stretchr/testify@v1.11.1" classname="licscan.gomod" time="0"></testcase>
+    <testcase name="golang.org/x/mod@v0.21.0" classname="licscan.gomod" time="0"></testcase>
+    <testcase name="gopkg.in/yaml.v3@v3.0.1" classname="licscan.gomod" time="0"></testcase>
+    <testcase name="github.com/davecgh/go-spew@v1.1.1" classname="licscan.gomod" time="0"></testcase>
+    <testcase name="github.com/inconshreveable/mousetrap@v1.1.0" classname="licscan.gomod" time="0"></testcase>
+    <testcase name="github.com/pmezard/go-difflib@v1.0.0" classname="licscan.gomod" time="0"></testcase>
+    <testcase name="github.com/spf13/pflag@v1.0.9" classname="licscan.gomod" time="0"></testcase>
+  </testsuite>
+</testsuites>

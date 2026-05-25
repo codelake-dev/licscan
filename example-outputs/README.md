@@ -40,6 +40,7 @@ product:
 | [`scan.cyclonedx.json`](scan.cyclonedx.json) | CycloneDX 1.5 SBOM | Industry-standard SBOM, accepted by Trivy / Grype / Snyk / Dependency-Track |
 | [`scan.spdx.json`](scan.spdx.json) | SPDX 2.3 SBOM | The other industry-standard SBOM; expected by some regulators / compliance tools |
 | [`scan.sarif.json`](scan.sarif.json) | SARIF 2.1.0 | Upload to GitHub Code Scanning via `actions/upload-sarif`. Only warn/deny findings appear as results; permissive deps are omitted. This example shows a synthetic project with one MPL-2.0 warning and one AGPL-3.0 denial |
+| [`scan.junit.xml`](scan.junit.xml) | JUnit XML | Compatible with Jenkins, GitLab CI, Azure DevOps and any CI that ingests xUnit reports. Each dependency is a testcase; warn/deny/incompatible verdicts are test failures |
 | [`cra-evidence.pdf`](cra-evidence.pdf) | PDF | EU CRA Article 13 evidence — cover page with manufacturer + product + scan metadata + summary table + dependency inventory. Generated together with the JSON below via `--cra` |
 | [`cra-sbom.cdx.json`](cra-sbom.cdx.json) | CycloneDX 1.5 + CRA extensions | The machine-readable counterpart to the PDF — CycloneDX SBOM with `metadata.manufacturer`, `metadata.lifecycles[].phase=operations`, and `eu-cra:*` namespaced properties |
 
@@ -63,7 +64,7 @@ To see those branches, pass `--cra` over a project with a `.licscan.yml` that de
 LICSCAN_VERSION=v0.11.0 curl -fsSL https://install.codelake.dev/licscan/install.sh | sh
 
 # Generate every format
-for f in table json html cyclonedx spdx markdown sarif; do
+for f in table json html cyclonedx spdx markdown sarif junit; do
   licscan scan ./your-project --format "$f" > "example-outputs/scan.${f}"
 done
 
