@@ -1,0 +1,101 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "licscan",
+          "informationUri": "https://licscan.dev",
+          "semanticVersion": "v0.12.0",
+          "rules": [
+            {
+              "id": "license/warning/MPL-2.0",
+              "name": "Weak Copyleft license: MPL-2.0",
+              "shortDescription": {
+                "text": "Dependency uses MPL-2.0 license (Weak Copyleft)"
+              },
+              "fullDescription": {
+                "text": "A dependency is licensed under MPL-2.0, classified as Weak Copyleft risk. Review your project's license policy."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": ["license", "compliance", "sbom", "warning"]
+              }
+            },
+            {
+              "id": "license/error/AGPL-3.0",
+              "name": "Viral / Problematic license: AGPL-3.0",
+              "shortDescription": {
+                "text": "Dependency uses AGPL-3.0 license (Viral / Problematic)"
+              },
+              "fullDescription": {
+                "text": "A dependency is licensed under AGPL-3.0, classified as Viral / Problematic risk. Review your project's license policy."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": ["license", "compliance", "sbom", "error"]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "license/warning/MPL-2.0",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "mpl-pkg@2.1.0 uses MPL-2.0 (Weak Copyleft)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "go.mod",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "package": "mpl-pkg",
+            "version": "2.1.0",
+            "license": "MPL-2.0",
+            "ecosystem": "gomod",
+            "verdict": "warn"
+          }
+        },
+        {
+          "ruleId": "license/error/AGPL-3.0",
+          "ruleIndex": 1,
+          "level": "error",
+          "message": {
+            "text": "old-thing@1.2.3 uses AGPL-3.0 (Viral / Problematic) — policy: deny strong-network-copyleft"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package.json",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "package": "old-thing",
+            "version": "1.2.3",
+            "license": "AGPL-3.0",
+            "ecosystem": "npm",
+            "verdict": "deny"
+          }
+        }
+      ]
+    }
+  ]
+}

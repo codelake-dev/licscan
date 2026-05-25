@@ -125,7 +125,7 @@ Scan a directory tree for dependency licenses.
 
 | Flag | Default | Description |
 |---|---|---|
-| `--format`, `-f` | `table` | Output format: `table`, `json`, `html`, `cyclonedx`, `spdx`, `markdown` |
+| `--format`, `-f` | `table` | Output format: `table`, `json`, `html`, `cyclonedx`, `spdx`, `markdown`, `sarif` |
 | `--ci` | `false` | CI mode — non-zero exit code on policy violation |
 | `--cra` | `false` | Emit EU CRA-compliant SBOM (PDF + JSON) |
 
@@ -256,6 +256,21 @@ licscan scan . --format spdx      > sbom.spdx.json  # SPDX 2.3
 ```
 
 Both formats include canonical PURLs (`pkg:golang/...`, `pkg:npm/...`, etc.) and are accepted by the major vulnerability scanners (Trivy, Grype, Snyk) and dependency-tracking platforms (Dependency-Track, FOSSA, DependencyHub). The CycloneDX BOM serial number is a stable RFC 4122 v4 UUID; the SPDX document namespace is a unique URI per scan.
+
+### SARIF (GitHub Code Scanning)
+
+```bash
+licscan scan . --format sarif > licscan.sarif.json
+```
+
+Upload to [GitHub Code Scanning](https://docs.github.com/en/code-security/code-scanning) via `actions/upload-sarif` to surface license violations in the Security tab. Only `warn` and `deny` findings appear — permissive dependencies are omitted.
+
+```yaml
+- uses: codelake-dev/licscan-action@v1
+- uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_file: licscan.sarif.json
+```
 
 ---
 

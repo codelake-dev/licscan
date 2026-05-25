@@ -5,7 +5,20 @@ All notable changes to `licscan` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v0.12.0] — 2026-05-25
+
+### Added
+
+- **`--format sarif`** — SARIF 2.1.0 output for GitHub Code Scanning. Upload via `actions/upload-sarif` to surface license violations directly in the GitHub Security tab. Only `warn` and `deny` findings appear as results; permissive dependencies are omitted. Rules are deduped by license+severity, each result links to the manifest file.
+- Example output `example-outputs/scan.sarif.json` with synthetic warn (MPL-2.0) and deny (AGPL-3.0) findings.
+
+## [v0.11.1] — 2026-05-25
+
+### Fixed
+
+- **Policy default inheritance**: `.licscan.yml` without explicit `deny:` or `warn:` keys now inherits the per-field defaults instead of being interpreted as "allow everything".
+
+## [v0.11.0] — 2026-05-24
 
 ### Added — Phase 10 (Markdown formatter)
 

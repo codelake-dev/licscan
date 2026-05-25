@@ -16,7 +16,7 @@ import (
 
 // supportedFormats is the closed set of --format values. Kept here so the
 // list lives next to the flag declaration and tests can import it.
-var supportedFormats = []string{"table", "json", "html", "cyclonedx", "spdx", "markdown"}
+var supportedFormats = []string{"table", "json", "html", "cyclonedx", "spdx", "markdown", "sarif"}
 
 type scanOptions struct {
 	format string
@@ -41,7 +41,8 @@ Output formats:
   html        Stand-alone HTML report
   cyclonedx   CycloneDX 1.5 SBOM
   spdx        SPDX 2.3 SBOM
-  markdown    Markdown summary for READMEs / PR comments`,
+  markdown    Markdown summary for READMEs / PR comments
+  sarif       SARIF 2.1.0 for GitHub Code Scanning`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			path := "."
@@ -182,6 +183,8 @@ func renderResult(w io.Writer, formatName string, result *scanner.Result) error 
 		return format.SPDX(w, result)
 	case "markdown":
 		return format.Markdown(w, result)
+	case "sarif":
+		return format.SARIF(w, result)
 	default:
 		return fmt.Errorf("unsupported format %q", formatName)
 	}
