@@ -84,8 +84,95 @@ func TestLoadAcceptsEmptyFile(t *testing.T) {
 	p, err := Load(dir)
 	require.NoError(t, err)
 	require.False(t, p.IsDefault(), "empty .licscan.yml is still a loaded policy (not default)")
-	require.Empty(t, p.Deny)
-	require.Empty(t, p.Warn)
+	// Per-field inherit: missing keys fall back to default lists.
+	require.NotEmpty(t, p.Deny, "empty file should inherit default deny list")
+	require.NotEmpty(t, p.Warn, "empty file should inherit default warn list")
+	require.Contains(t, p.Deny, "AGPL-3.0")
+	require.Contains(t, p.Warn, "LGPL-3.0")
+}
+
+// ── Per-field inherit from defaults ────────────────────────────
+
+func TestLoadInheritsDefaultsWhenOnlyManufacturerSet(t *testing.T) {
+	// Common case: .licscan.yml exists purely to set manufacturer/product
+	// for CRA evidence. deny/warn keys are absent → inherit defaults
+	// (not "explicitly allow everything", which was the pre-fix behaviour
+	// reported in licscan#8).
+	dir := writePolicy(t, `
+manufacturer:
+  name: Acme GmbH
+  email: security@acme.example
+  url: https://acme.example
+  country: DE
+product:
+  name: legacy-app
+  version: 1.0.0
+`)
+	p, err := Load(dir)
+	require.NoError(t, err)
+	require.Equal(t, "Acme GmbH", p.Manufacturer.Name)
+	require.Contains(t, p.Deny, "GPL-3.0", "deny list must be inherited from defaults")
+	require.Contains(t, p.Deny, "AGPL-3.0")
+	require.Contains(t, p.Warn, "LGPL-3.0", "warn list must be inherited from defaults")
+}
+
+func TestLoadExplicitEmptyDenyMeansAllowEverything(t *testing.T) {
+	// Explicit `deny: []` is the escape-hatch for projects that want to
+	// turn off the default deny list entirely. The key is *present* (so
+	// the slice is non-nil empty, not nil) → no inherit.
+	dir := writePolicy(t, `
+deny: []
+warn:
+  - LGPL-3.0
+`)
+	p, err := Load(dir)
+	require.NoError(t, err)
+	require.NotNil(t, p.Deny, "explicit empty list must stay non-nil")
+	require.Empty(t, p.Deny, "explicit `deny: []` should NOT inherit defaults")
+	require.Equal(t, []string{"LGPL-3.0"}, p.Warn,
+		"warn was explicitly set, should not inherit defaults either")
+}
+
+func TestLoadOverridesOneFieldInheritsOther(t *testing.T) {
+	// User sets only deny, omits warn → deny is custom, warn inherits.
+	dir := writePolicy(t, `
+deny:
+  - MIT
+`)
+	p, err := Load(dir)
+	require.NoError(t, err)
+	require.Equal(t, []string{"MIT"}, p.Deny, "custom deny list preserved as-is")
+	require.NotEmpty(t, p.Warn, "warn was absent, should inherit defaults")
+	require.Contains(t, p.Warn, "LGPL-3.0")
+}
+
+func TestLoadExplicitFullOverride(t *testing.T) {
+	// User explicitly sets both deny + warn → no inherit at all.
+	dir := writePolicy(t, `
+deny:
+  - AGPL-3.0
+warn:
+  - GPL-3.0
+`)
+	p, err := Load(dir)
+	require.NoError(t, err)
+	require.Equal(t, []string{"AGPL-3.0"}, p.Deny)
+	require.Equal(t, []string{"GPL-3.0"}, p.Warn)
+}
+
+func TestLoadDefaultPolicyAppliesAGPLDeny(t *testing.T) {
+	// End-to-end: a minimal .licscan.yml + an AGPL-3.0 dep → ✗ deny.
+	// Was the failure mode reported in licscan#8.
+	dir := writePolicy(t, `
+manufacturer:
+  name: Acme GmbH
+`)
+	p, err := Load(dir)
+	require.NoError(t, err)
+
+	r := resultWithDeps(depWith("evil-lib", "AGPL-3.0"))
+	p.Apply(r)
+	require.Equal(t, VerdictDeny, r.Dependencies[0].Verdict)
 }
 
 // ── Manufacturer + Product blocks (EU CRA evidence) ─────────────
