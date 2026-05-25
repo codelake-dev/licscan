@@ -16,6 +16,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Go Reference](https://pkg.go.dev/badge/github.com/codelake-dev/licscan.svg)](https://pkg.go.dev/github.com/codelake-dev/licscan)
 [![Go Report Card](https://goreportcard.com/badge/github.com/codelake-dev/licscan)](https://goreportcard.com/report/github.com/codelake-dev/licscan)
+[![GitHub Marketplace](https://img.shields.io/badge/marketplace-licscan-green?logo=github)](https://github.com/marketplace/actions/licscan)
 
 </div>
 
