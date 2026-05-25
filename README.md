@@ -21,6 +21,8 @@
 
 ---
 
+> 👀 **See it in action:** [`example-outputs/`](example-outputs/) contains every format licscan can produce — table, JSON, HTML report, CycloneDX + SPDX SBOMs, Markdown for PR comments, and a full EU CRA evidence pair (PDF + JSON). Real output from a real scan, no installation required.
+
 ## What is licscan?
 
 `licscan` scans a project for the licenses of its dependencies, classifies them by risk, checks whether the combination can be shipped, and exports a standards-compliant SBOM (CycloneDX 1.5 / SPDX 2.3).
