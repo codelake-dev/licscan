@@ -9,10 +9,31 @@ import (
 	"github.com/codelake-dev/licscan/internal/scanner/policy"
 )
 
+var companionManifests = map[string]string{
+	"composer.lock":    "composer.json",
+	"package-lock.json": "package.json",
+	"Cargo.lock":       "Cargo.toml",
+	"Gemfile.lock":     "Gemfile",
+	"poetry.lock":      "pyproject.toml",
+	"go.sum":           "go.mod",
+}
+
 func buildDiagnostics(root string, result *scanner.Result) map[string][]diagnostic {
 	byURI := make(map[string][]diagnostic)
-
 	manifestContents := make(map[string][]string)
+
+	readLines := func(absPath string) []string {
+		if lines, ok := manifestContents[absPath]; ok {
+			return lines
+		}
+		data, err := os.ReadFile(absPath)
+		if err != nil {
+			return nil
+		}
+		lines := strings.Split(string(data), "\n")
+		manifestContents[absPath] = lines
+		return lines
+	}
 
 	for _, dep := range result.Dependencies {
 		manifest := dep.Manifest
@@ -24,47 +45,46 @@ func buildDiagnostics(root string, result *scanner.Result) map[string][]diagnost
 		if !filepath.IsAbs(manifest) {
 			absManifest = filepath.Join(root, manifest)
 		}
-		uri := pathToURI(absManifest)
 
-		lines, ok := manifestContents[absManifest]
-		if !ok {
-			data, err := os.ReadFile(absManifest)
-			if err != nil {
-				continue
-			}
-			lines = strings.Split(string(data), "\n")
-			manifestContents[absManifest] = lines
+		targets := []string{absManifest}
+		if companion, ok := companionManifests[filepath.Base(manifest)]; ok {
+			targets = append(targets, filepath.Join(filepath.Dir(absManifest), companion))
 		}
-
-		line, col, endCol := findDepLine(lines, dep)
 
 		sev := verdictToSeverity(dep.Verdict, dep.PrimaryRisk())
-		if sev == 0 {
-			continue
-		}
-
 		license := dep.PrimaryLicense()
 		risk := dep.PrimaryRisk().String()
 		msg := formatDiagMessage(dep, license, risk)
 
-		d := diagnostic{
-			Range: diagRange{
-				Start: position{Line: line, Character: col},
-				End:   position{Line: line, Character: endCol},
-			},
-			Severity: sev,
-			Source:   "licscan",
-			Code:     license,
-			Message:  msg,
-			Data: &diagnosticData{
-				License:   license,
-				Risk:      risk,
-				Verdict:   dep.Verdict,
-				Ecosystem: dep.Ecosystem,
-			},
-		}
+		for _, target := range targets {
+			lines := readLines(target)
+			if lines == nil {
+				continue
+			}
 
-		byURI[uri] = append(byURI[uri], d)
+			line, col, endCol := findDepLine(lines, dep)
+			if line == 0 && col == 0 && endCol == 0 {
+				continue
+			}
+
+			uri := pathToURI(target)
+			byURI[uri] = append(byURI[uri], diagnostic{
+				Range: diagRange{
+					Start: position{Line: line, Character: col},
+					End:   position{Line: line, Character: endCol},
+				},
+				Severity: sev,
+				Source:   "licscan",
+				Code:     license,
+				Message:  msg,
+				Data: &diagnosticData{
+					License:   license,
+					Risk:      risk,
+					Verdict:   dep.Verdict,
+					Ecosystem: dep.Ecosystem,
+				},
+			})
+		}
 	}
 
 	return byURI
@@ -74,15 +94,15 @@ func buildInlayHints(path, content string, result *scanner.Result) []inlayHint {
 	lines := strings.Split(content, "\n")
 	base := filepath.Base(path)
 
+	if !isRelatedManifest(base) {
+		return nil
+	}
+
 	var hints []inlayHint
 
 	for _, dep := range result.Dependencies {
-		if filepath.Base(dep.Manifest) != base {
-			continue
-		}
-
 		line, _, endCol := findDepLine(lines, dep)
-		if line < 0 {
+		if line == 0 && endCol == 0 {
 			continue
 		}
 
@@ -105,6 +125,20 @@ func buildInlayHints(path, content string, result *scanner.Result) []inlayHint {
 	}
 
 	return hints
+}
+
+var relatedManifests = map[string]bool{
+	"go.mod": true, "go.sum": true,
+	"package.json": true, "package-lock.json": true,
+	"composer.json": true, "composer.lock": true,
+	"Cargo.toml": true, "Cargo.lock": true,
+	"Gemfile": true, "Gemfile.lock": true,
+	"pyproject.toml": true, "poetry.lock": true, "Pipfile.lock": true, "requirements.txt": true,
+	"pom.xml": true,
+}
+
+func isRelatedManifest(base string) bool {
+	return relatedManifests[base]
 }
 
 func findDepLine(lines []string, dep scanner.Dependency) (line, col, endCol int) {
@@ -166,17 +200,15 @@ func verdictToSeverity(verdict string, risk scanner.RiskLevel) int {
 	case policy.VerdictWarn:
 		return severityWarning
 	case policy.VerdictAllow, policy.VerdictExempt:
-		return severityHint
+		return severityInformation
 	default:
 		switch risk {
 		case scanner.RiskViral, scanner.RiskStrongCopyleft:
 			return severityError
 		case scanner.RiskWeakCopyleft:
 			return severityWarning
-		case scanner.RiskUnknown:
-			return severityInformation
 		default:
-			return severityHint
+			return severityInformation
 		}
 	}
 }

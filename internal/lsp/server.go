@@ -196,18 +196,26 @@ func (s *Server) handleInlayHint(msg jsonRPCMessage, raw json.RawMessage) error 
 	}
 
 	uri := full.Params.TextDocument.URI
-	path := uriToPath(uri)
+	filePath := uriToPath(uri)
 
 	s.mu.Lock()
 	content, hasContent := s.docs[uri]
 	result := s.lastScan
 	s.mu.Unlock()
 
-	if result == nil || !hasContent {
+	if result == nil {
 		return s.respond(msg.ID, []inlayHint{})
 	}
 
-	hints := buildInlayHints(path, content, result)
+	if !hasContent {
+		data, err := os.ReadFile(filePath)
+		if err != nil {
+			return s.respond(msg.ID, []inlayHint{})
+		}
+		content = string(data)
+	}
+
+	hints := buildInlayHints(filePath, content, result)
 	return s.respond(msg.ID, hints)
 }
 

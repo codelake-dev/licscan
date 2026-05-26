@@ -80,8 +80,8 @@ func TestVerdictToSeverity(t *testing.T) {
 		{"deny", severityError},
 		{"incompatible", severityError},
 		{"warn", severityWarning},
-		{"allow", severityHint},
-		{"exempt", severityHint},
+		{"allow", severityInformation},
+		{"exempt", severityInformation},
 	}
 
 	for _, tt := range tests {
