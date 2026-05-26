@@ -5,6 +5,15 @@ All notable changes to `licscan` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.17.0] — 2026-05-26
+
+### Fixed
+
+- **LSP Windows test** — URI conversion test now handles Windows backslash paths correctly.
+- **LSP diagnostics** — now published on companion manifests (e.g. `composer.json` when deps come from `composer.lock`). All deps show as information-level diagnostics in the Problems panel.
+- **LSP inlay hints** — fall back to reading file from disk when document content isn't cached via didOpen.
+- **Lint fixes** — gofmt alignment, prealloc for inlay hints slice.
+
 ## [v0.16.0] — 2026-05-26
 
 ### Added

@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"runtime"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -102,8 +104,13 @@ func TestIsManifestURI(t *testing.T) {
 }
 
 func TestURIConversion(t *testing.T) {
-	assert.Equal(t, "/tmp/project", uriToPath("file:///tmp/project"))
-	assert.Contains(t, pathToURI("/tmp/project"), "file:///tmp/project")
+	if runtime.GOOS == "windows" {
+		assert.Contains(t, uriToPath("file:///C:/tmp/project"), "tmp/project")
+		assert.Contains(t, pathToURI("C:\\tmp\\project"), "file://")
+	} else {
+		assert.Equal(t, "/tmp/project", uriToPath("file:///tmp/project"))
+		assert.Contains(t, pathToURI("/tmp/project"), "file:///tmp/project")
+	}
 }
 
 func TestFindDepLine(t *testing.T) {

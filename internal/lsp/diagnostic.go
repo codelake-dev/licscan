@@ -10,12 +10,12 @@ import (
 )
 
 var companionManifests = map[string]string{
-	"composer.lock":    "composer.json",
+	"composer.lock":     "composer.json",
 	"package-lock.json": "package.json",
-	"Cargo.lock":       "Cargo.toml",
-	"Gemfile.lock":     "Gemfile",
-	"poetry.lock":      "pyproject.toml",
-	"go.sum":           "go.mod",
+	"Cargo.lock":        "Cargo.toml",
+	"Gemfile.lock":      "Gemfile",
+	"poetry.lock":       "pyproject.toml",
+	"go.sum":            "go.mod",
 }
 
 func buildDiagnostics(root string, result *scanner.Result) map[string][]diagnostic {
@@ -98,7 +98,7 @@ func buildInlayHints(path, content string, result *scanner.Result) []inlayHint {
 		return nil
 	}
 
-	var hints []inlayHint
+	hints := make([]inlayHint, 0, len(result.Dependencies))
 
 	for _, dep := range result.Dependencies {
 		line, _, endCol := findDepLine(lines, dep)
