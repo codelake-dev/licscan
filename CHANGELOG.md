@@ -5,6 +5,12 @@ All notable changes to `licscan` will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.16.0] — 2026-05-26
+
+### Added
+
+- **`licscan lsp`** — built-in Language Server Protocol server for editor integration. Runs on stdin/stdout (JSON-RPC 2.0), watches manifest files (go.mod, package.json, Cargo.toml, etc.), scans on open/save, and publishes diagnostics + inlay hints showing the license for each dependency inline. Works with VS Code, JetBrains (via LSP plugin), Neovim (via lspconfig), and any LSP-compatible editor. Zero external dependencies — pure Go implementation using only `encoding/json` + `bufio`.
+
 ## [v0.15.0] — 2026-05-25
 
 ### Added
